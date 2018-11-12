@@ -14,8 +14,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
-# CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
-CONF_DIR = '/data/config/rauma/setting.ini'
+CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
+# CONF_DIR = '/data/config/rauma/setting.ini'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -120,7 +120,7 @@ WSGI_APPLICATION = 'rauma.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rauma',
+        'NAME': 'polls',
         'USER': 'mysql',
         'PASSWORD': '123456',
         'HOST': '172.16.50.112',

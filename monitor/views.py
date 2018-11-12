@@ -2,29 +2,78 @@
 from __future__ import unicode_literals
 
 import json
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+import logging
+from datetime import datetime
+
 from django.shortcuts import render
+from django.http import HttpResponse
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.http import JsonResponse
 from rest_framework import permissions
 from rest_framework import renderers
-from rest_framework import viewsets
 from rest_framework.decorators import detail_route
-from rest_framework.response import Response
-from monitor.models import Item, Group, GroupItem, Record
-from monitor.serializers import ItemSerializer
-from django.db import connection, transaction
-from datetime import datetime
-from monitor.pojo.my_enum import *
 
-import logging
+from monitor.models import Item, Group, GroupItem, Record
+from monitor.pojo.my_enum import *
+from monitor.serializers import ItemSerializer, UserSerializer
 
 log = logging.getLogger(__name__)
+
+
+# 首页
+@login_required(login_url='/login')
+def index(request):
+    return render(request, 'index.html')
+
+
+# 欢迎页面
+def welcome(request):
+    return render(request, 'welcome.html')
+
+
+# 登陆
+def login_index(request):
+    if request.method == 'GET':
+        return render(request, 'login.html')
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            login(request, user)
+            log.info("login account:%s" % (username))
+            return render(request, 'index.html')
+        else:
+            log.error("disabled account:%s" % (username))
+            return render(request, 'login.html', {'errmsg': 'disabled account'})
+    else:
+        log.error("invalid login:%s" % (username))
+        return render(request, 'login.html', {'errmsg': 'invalid login'})
+
+
+# 登出
+def logout_view(request):
+    logout(request)
+    return render(request, 'login.html')
+
+
+# 用户注册
+def register(request):
+    if request.method == 'GET':
+        return HttpResponse('ok')
+    username = request.POST['username']
+    password = request.POST['password']
+    email = request.POST['email']
+    user = User.objects.create_user(username=username, email=password, password=password)
+    user.save()
+    return HttpResponse('register succ')
 
 
 # 获取监控大盘数据
 @login_required(login_url='/login')
 def index(request):
-    log.info("index")
     querySet = Record.objects.raw("SELECT a.* "
                                   "FROM `monitor_record` AS a, "
                                   "(SELECT `mon_id` , MAX(`utime`) AS utime "
@@ -164,6 +213,41 @@ def groupSingle(request, gro_id='0'):
 
 
 # ---------------------------下面是接口---------------------------
+from django.contrib.auth.models import User
+from rest_framework.response import Response
+
+# ---------------------------user
+from rest_framework import viewsets
+
+
+# class UserViewSet(mixins.CreateModelMixin,
+#                                 mixins.ListModelMixin,
+#                                 mixins.RetrieveModelMixin,
+#                                 viewsets.GenericViewSet):
+#     """
+#     Example empty viewset demonstrating the standard
+#     actions that will be handled by a router class.
+
+#     If you're using format suffixes, make sure to also include
+#     the `format=None` keyword argument for each action.
+#     """
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+# class UserViewSet(viewsets.ModelViewSet):
+#     """
+#     This viewset automatically provides `list` and `detail` actions.
+#     """
+#     queryset = User.objects.all()
+#     serializer_class = UserSerializer
 
 
 class ItemVo(Item):

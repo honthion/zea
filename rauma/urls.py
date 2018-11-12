@@ -1,4 +1,4 @@
-"""rauma URL Configuration
+"""tutorial URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.11/topics/http/urls/
@@ -25,11 +25,18 @@ import monitor.my_scheduler.wechat  # NOQA @isort:skip
 router = DefaultRouter()
 router.register(r'items', monitor_views.ItemViewSet)
 router.register(r'records', monitor_views.RecordViewSet)
+router.register(r'users', monitor_views.UserViewSet)
 
 # The API URLs are now determined automatically by the router.
 # Additionally, we include the login URLs for the browsable API.
 urlpatterns = [
     url(r'^monitor/', include(monitor_urls)),
+
+    url(r'^register$', monitor_views.register),
+    url(r'^login_out$', monitor_views.logout_view),
+    url(r'^login$', monitor_views.login_index),
+    url(r'^index$', monitor_views.index),
+    url(r'^welcome$', monitor_views.welcome, name='welcome'),
 
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
