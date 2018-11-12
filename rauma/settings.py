@@ -28,9 +28,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'cm*oz%(rg6s#b%s_$gd4#zbc2ud(2m38czmpf*dcubw+f8t7#m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
@@ -123,7 +123,7 @@ DATABASES = {
         'NAME': 'rauma',
         'USER': 'mysql',
         'PASSWORD': '123456',
-        'HOST': '172.16.50.112',
+        'HOST': '172.16.50.131',
         'PORT': '3306',
 
     }
