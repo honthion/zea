@@ -20,7 +20,6 @@ from monitor import urls as monitor_urls
 from rest_framework.routers import DefaultRouter
 from rest_framework_jwt.views import obtain_jwt_token
 import monitor.my_scheduler.admin_scheduler  # NOQA @isort:skip
-import monitor.my_scheduler.wechat  # NOQA @isort:skip
 # Create a router and register our viewsets with it.
 router = DefaultRouter()
 router.register(r'items', monitor_views.ItemViewSet)
