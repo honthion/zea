@@ -212,6 +212,31 @@ def groupSingle(request, gro_id='0'):
     return JsonResponse({"success": True, "msg": "", "data": ""})
 
 
+# 包含单个状态修改
+@login_required(login_url='/login')
+def recordSingle(request, record_id='0'):
+    requestMethod = request.method
+    print requestMethod
+    try:
+        if 'PUT' == requestMethod:
+            if record_id != 0:
+                record = Record.objects.get(id=record_id)
+                requestBody = json.loads(request.body)
+                record.remark = requestBody.get('remark')
+                # 修改现有的
+                record.save()
+        elif 'GET' == requestMethod:
+            # 需要获取 分组信息
+            record = Record.objects.get(id=record_id)
+            return render(request, 'monitor/monitor-record-edit.html', {'record': record})
+        else:
+            pass
+    except Exception as e:
+        print ("Exception!" + e.message)
+        return JsonResponse({"success": False, "msg": e.message, "data": ""})
+    return JsonResponse({"success": True, "msg": "", "data": ""})
+
+
 # ---------------------------下面是接口---------------------------
 from django.contrib.auth.models import User
 from rest_framework.response import Response
