@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from smtplib import SMTPException
-from tutorial.settings import *
+from rauma.settings import *
 from monitor.my_scheduler import email_send
 from wxpy import *
 import monitor.my_util.my_conf as my_conf

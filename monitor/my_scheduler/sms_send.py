@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.mail import send_mail
 from smtplib import SMTPException
-from tutorial.settings import *
+from rauma.settings import *
 import logging
 
 log = logging.getLogger(__name__)

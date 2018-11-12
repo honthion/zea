@@ -1,5 +1,5 @@
 import configparser
-from tutorial import settings
+from rauma import settings
 
 cf = configparser.ConfigParser()
 conf_path = settings.CONF_DIR
