@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
-CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
+# CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
 # CONF_DIR = '/data/config/rauma/setting.ini'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -27,10 +27,38 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECRET_KEY = '*l-azd7kg_a)c3&ukm%eucz7rf#niyj+l^h@orf4+=uqv^2uu('
 SECRET_KEY = 'cm*oz%(rg6s#b%s_$gd4#zbc2ud(2m38czmpf*dcubw+f8t7#m'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+sys = os.name
+if sys == 'nt':
+    CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
+    DEBUG = True
+    ALLOWED_HOSTS = ['127.0.0.1']
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'polls',
+            'USER': 'mysql',
+            'PASSWORD': '123456',
+            'HOST': '172.16.50.112',
+            'PORT': '3306',
+
+        }
+    }
+elif sys == 'posix':
+    CONF_DIR = '/data/config/rauma/setting.ini'
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'rauma',
+            'USER': 'miaojiebeijiankong_rw',
+            'PASSWORD': 'Njk5NjNlYjk5M2Nk',
+            'HOST': '172.16.50.131',
+            'PORT': '3306',
+
+        }
+    }
 
 # Application definition
 INSTALLED_APPS = [
@@ -45,7 +73,6 @@ INSTALLED_APPS = [
     'django_apscheduler',
     'monitor.templatetags.my_tags',
 ]
-
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
@@ -110,24 +137,6 @@ WSGI_APPLICATION = 'rauma.wsgi.application'
 # }
 
 
-# Running locally so connect to either a local MySQL instance or connect to
-# Cloud SQL via the proxy. To start the proxy via command line:
-#
-#     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
-#
-# See https://cloud.google.com/sql/docs/mysql-connect-proxy
-# gcloud本地调试
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'polls',
-        'USER': 'mysql',
-        'PASSWORD': '123456',
-        'HOST': '172.16.50.112',
-        'PORT': '3306',
-
-    }
-}
 
 # sqlite本地调试
 # DATABASES = {
