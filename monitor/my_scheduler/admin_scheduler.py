@@ -30,7 +30,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 #     print (datetime.datetime.now())
 
 # 微信心跳
-@register_job(scheduler, CronTrigger.from_crontab('0/1 * * * *'), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab('0/5 * * * *'), replace_existing=True)
 def wechat_heart():
     wechat.heart()
 

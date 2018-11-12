@@ -28,7 +28,7 @@ class ItemEnum(Enum):
     base_task = {"id": 1,
                  "mon_type": 1,
                  "mon_title": "账户登陆",
-                 "mon_trigger": "0/1 * * * *",
+                 "mon_trigger": "0/5 * * * *",
                  "mon_trigger_desc": "轮询每隔5分钟",
                  "mon_desc": "模拟用户登陆，如果无法登陆，则告警level=1"}
 
