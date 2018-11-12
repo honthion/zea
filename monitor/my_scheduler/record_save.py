@@ -76,7 +76,7 @@ def send_message(item_enum, task_success, remark):
         email_send.send(my_conf.notify_email_subject, notify_msg,
                         email_list)
     # 发送微信
-    wechat.send("account", notify_msg)
+    wechat.send_message(notify_msg)
 
 
 def split_comma_to_set(str):

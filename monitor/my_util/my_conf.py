@@ -20,3 +20,15 @@ turku_login_url = cf.get("turku_host", "host") + cf.get("turku_host", "login_api
 notify_email_subject = cf.get("monitor_notify", "email_subject")
 
 notify_email_manager = cf.get("monitor_notify", "email_manager")
+
+wx_corpid = cf.get("weixin", "corpid").encode('unicode-escape').decode('string_escape')
+
+wx_mjb_agentid = cf.get("weixin", "mjb_agentid").encode('unicode-escape').decode('string_escape')
+
+wx_mjb_secret = cf.get("weixin", "mjb_secret").encode('unicode-escape').decode('string_escape')
+
+wx_get_token_url = cf.get("weixin", "get_token_url").encode('unicode-escape').decode('string_escape')
+
+wx_apply_info_url = cf.get("weixin", "apply_info_url").encode('unicode-escape').decode('string_escape')
+
+wx_send_msg_url = cf.get("weixin", "send_msg_url").encode('unicode-escape').decode('string_escape')
