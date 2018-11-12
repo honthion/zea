@@ -29,4 +29,6 @@ urlpatterns = [
     url(r'^group/$', views.group),
     url(r'^groups/(?P<gro_id>\d+)/$', views.groupSingle),
 
+    url(r'^records/(?P<record_id>\d+)/$', views.recordSingle),
+
 ]
