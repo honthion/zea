@@ -22,6 +22,10 @@ from rest_framework_jwt.views import obtain_jwt_token
 import monitor.my_scheduler.admin_scheduler  # NOQA @isort:skip
 # import monitor.my_scheduler.wechat  # NOQA @isort:skip
 # Create a router and register our viewsets with it.
+
+from django.views import static
+from django.conf import settings
+
 router = DefaultRouter()
 router.register(r'items', monitor_views.ItemViewSet)
 router.register(r'records', monitor_views.RecordViewSet)
@@ -42,7 +46,12 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/', obtain_jwt_token),
     url(r'^admin/', include(admin.site.urls)),
+
+    url(r'^static/(?P<path>.*)$', static.serve,
+        {'document_root': settings.STATIC_ROOT}, name='static')
 ]
+
+handler404 = monitor_views.page_not_found
 
 import logging
 logging.debug("debug")

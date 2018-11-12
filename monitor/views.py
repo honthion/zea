@@ -237,6 +237,11 @@ def recordSingle(request, record_id='0'):
     return JsonResponse({"success": True, "msg": "", "data": ""})
 
 
+def page_not_found(request):
+    from django.shortcuts import render
+    return render(request, '404.html')
+
+
 # ---------------------------下面是接口---------------------------
 from django.contrib.auth.models import User
 from rest_framework.response import Response

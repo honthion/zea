@@ -1042,7 +1042,6 @@ function stopDefault(e) {
 				});
 				return this;
 			}
-			// is your DOM ready?  http://docs.jquery.com/Tutorials:Introducing_$(document).ready()
 			log('terminating; zero elements found by selector' + ($.isReady ? '': ' (DOM not ready)'));
 			return this;
 		}
