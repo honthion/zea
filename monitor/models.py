@@ -76,3 +76,4 @@ class Record(models.Model):
 
     class Meta:
         ordering = ('-utime',)
+        get_latest_by = "utime"
