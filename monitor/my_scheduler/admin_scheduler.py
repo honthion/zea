@@ -7,7 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 import logging
-import base_task,wechat
+import base_task, wechat
 from monitor.pojo.my_enum import *
 
 log = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 @register_job(scheduler, CronTrigger.from_crontab('0/5 * * * *'), replace_existing=True)
 def wechat_heart():
     wechat.heart()
+
 
 # 账号登陆
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)

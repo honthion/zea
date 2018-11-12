@@ -112,7 +112,6 @@ def item(request, item_id='0'):
 @login_required(login_url='/login')
 def groups(request):
     requestMethod = request.method
-    print requestMethod
     try:
         if 'GET' == requestMethod:
             querySet = Group.objects.all()
@@ -161,7 +160,6 @@ def group(request):
 @login_required(login_url='/login')
 def groupSingle(request, gro_id='0'):
     requestMethod = request.method
-    print requestMethod
     try:
         if 'PUT' == requestMethod:
             if gro_id != 0:
@@ -216,14 +214,13 @@ def groupSingle(request, gro_id='0'):
 @login_required(login_url='/login')
 def recordSingle(request, record_id='0'):
     requestMethod = request.method
-    print requestMethod
     try:
         if 'PUT' == requestMethod:
             if record_id != 0:
                 record = Record.objects.get(id=record_id)
                 requestBody = json.loads(request.body)
+                record.operator= request.user.username
                 record.remark = requestBody.get('remark')
-                # 修改现有的
                 record.save()
         elif 'GET' == requestMethod:
             # 需要获取 分组信息

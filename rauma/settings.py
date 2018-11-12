@@ -27,12 +27,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECRET_KEY = '*l-azd7kg_a)c3&ukm%eucz7rf#niyj+l^h@orf4+=uqv^2uu('
 SECRET_KEY = 'cm*oz%(rg6s#b%s_$gd4#zbc2ud(2m38czmpf*dcubw+f8t7#m'
 
-
 sys = os.name
+LOG_FILE_PATH = ''
 if sys == 'nt':
     CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
     DEBUG = True
-    ALLOWED_HOSTS = ['127.0.0.1']
+    ALLOWED_HOSTS = ['*']
+    LOG_FILE_PATH = 'D://data//rauma//rauma.log'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -48,6 +49,7 @@ elif sys == 'posix':
     CONF_DIR = '/data/config/rauma/setting.ini'
     DEBUG = False
     ALLOWED_HOSTS = ['*']
+    LOG_FILE_PATH = '/data/log/rauma/rauma.log'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -137,7 +139,6 @@ WSGI_APPLICATION = 'rauma.wsgi.application'
 # }
 
 
-
 # sqlite本地调试
 # DATABASES = {
 #     'default': {
@@ -216,10 +217,11 @@ LOGGING = {
         },
         'logfile': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR + "/log",
-            'maxBytes': 1024 * 1024 * 5,
-            'backupCount': 5,
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': LOG_FILE_PATH,
+            'when': 'midnight',
+            'interval': 1,
+            'backupCount': 100,
             'formatter': 'standard',
         },
         'console': {
