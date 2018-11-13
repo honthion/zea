@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^register$', monitor_views.register),
     url(r'^login_out$', monitor_views.logout_view),
     url(r'^login$', monitor_views.login_index),
+    url(r'^$', monitor_views.login_index),
     url(r'^index$', monitor_views.index),
     url(r'^welcome$', monitor_views.welcome, name='welcome'),
 

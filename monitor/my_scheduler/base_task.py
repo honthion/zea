@@ -14,7 +14,7 @@ def account_login():
     task_success = True
     try:
         request_body = {'cellphone': '13261575028', 'password': 'fae262e4c1e545642eed8d3a3e8fd89f', 'type': 0,
-                        'secretKey': '059b668ae94237c2fbe64df4198e1a0'}
+                        'secretKey': '059b668ae94237c2fbe64df4198e1a00'}
         url = my_conf.turku_login_url
         log.info("account_login request. url:%s,request_body:%s" % (url, request_body))
         r = requests.post(url, data=request_body)
