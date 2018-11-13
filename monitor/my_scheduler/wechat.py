@@ -51,19 +51,24 @@ def get_token():
 
 
 # 获取
-def send_message(msg):
+def send_message(tagids, msg):
     if not msg:
         log.error("msg is null")
         return
-    work_dict = get_work_dict(msg)
+    work_dict = get_work_dict(tagids, msg)
     if not work_dict:
         log.error("get_work_dict fail")
     request_url = my_conf.wx_send_msg_url + ('?access_token=%s' % (get_token()))
     log.info("request_url:%s,data:%s" % (request_url, json.dumps(work_dict)))
+    header = {
+        'dataType': "json",
+        'Content-Type': 'application/json',
+    }
     retry = 0
     while retry < 3:
         try:
-            response = requests.post(url=request_url, data=work_dict)
+            # 大坑  https://blog.csdn.net/testcs_dn/article/details/79755451
+            response = requests.post(url=request_url, data=json.dumps(work_dict), headers=header)
             log.info("send_message success.msg:%s,response:%s" % (msg, response.text))
             return
         except Exception as e:
@@ -72,20 +77,23 @@ def send_message(msg):
 
 
 # 获取传递的dict
-def get_work_dict(msg):
+def get_work_dict(tagids, msg):
     apply_dict = get_apply_dict()
     if not apply_dict:
         log.error("apply_dict is null")
         return None
     work_dict = {}
+    content = {}
+    content['content'] = msg
     try:
         work_dict['agentid'] = my_conf.wx_mjb_agentid
         work_dict['msgtype'] = u'text'
-        work_dict['text'] = {'content': msg}
-        work_dict['toparty'] = apply_dict.get('toparty', '')
+        work_dict['text'] = content
+        work_dict['toparty'] = ''
         work_dict['safe'] = '0'
-        work_dict['totag'] = apply_dict.get('totag', '')
-        work_dict['touser'] = apply_dict.get('touser')
+        # 格式要求竖线
+        work_dict['totag'] = tagids.replace(',', '|')
+        work_dict['touser'] = ''
     except Exception as e:
         log.error("apply_dict fail" + e.message)
     log.info("apply_dict return" + json.dumps(work_dict))
@@ -102,12 +110,16 @@ def get_apply_dict():
     apply_dict['agentId'] = apply_info_dict.get('agentId')
 
     # 获取tagId
+    tagids = ['5']
+    if tagids:
+        apply_dict['totag'] = "|".join(tagids)
+
     try:
         allow_tags = apply_info_dict.get('allow_tags')
-        if allow_tags:
+        if True:
             tagids = allow_tags.get('tagid')
             if tagids:
-                apply_dict['toTag'] = ",".join(tagids)
+                apply_dict['totag'] = "|".join(tagids)
     except Exception as e:
         log.error("get toTag fail:%s" % (apply_info))
 
@@ -117,7 +129,7 @@ def get_apply_dict():
         if allow_partys:
             partyids = allow_partys.get('partyid')
             if partyids:
-                apply_dict['toParty'] = ",".join(partyids)
+                apply_dict['toparty'] = "|".join(partyids)
     except Exception as e:
         log.error("get toParty fail:%s" % (apply_info))
     # 获取toUser
@@ -126,8 +138,8 @@ def get_apply_dict():
         user_id = ''
         if allow_userinfos:
             users = allow_userinfos['user']
-            for user in users:
-                user_id = "|" + user.get('userid')
+            # for user in users:
+            #     user_id = "|" + user.get('userid')
             apply_dict['touser'] = user_id[1:]
     except Exception as e:
         log.error("get toUser fail:%s" % (apply_info))
