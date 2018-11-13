@@ -218,7 +218,6 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            # Avoid double logging because of root logger
             'propagate': False,
             'level': 'WARN',
         },
@@ -242,11 +241,11 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 # send e-mail
-EMAIL_HOST = 'smtp.163.com'  # smtp 地址（这里需要注意，如果你和我一样使用 163 邮箱的话，默认 smtp 功能是关闭的，需要去设置开启，并生成一个一次性密码用于连接 smtp 服务）
-EMAIL_HOST_USER = '18623001528@163.com'  # 用户
-EMAIL_HOST_PASSWORD = '881020Aa'  # 密码
-EMAIL_SUBJECT_PREFIX = u'[321]'  # 为邮件Subject-line前缀,默认是'[django]'
-EMAIL_USE_TLS = True  # 与SMTP服务器通信时，是否启动TLS链接(安全链接)。默认是false
+# EMAIL_HOST = 'smtp.163.com'  # smtp 地址（这里需要注意，如果你和我一样使用 163 邮箱的话，默认 smtp 功能是关闭的，需要去设置开启，并生成一个一次性密码用于连接 smtp 服务）
+# EMAIL_HOST_USER = '@163.com'  # 用户
+# EMAIL_HOST_PASSWORD = ''  # 密码
+# EMAIL_SUBJECT_PREFIX = u'[]'  # 为邮件Subject-line前缀,默认是'[django]'
+# EMAIL_USE_TLS = True  # 与SMTP服务器通信时，是否启动TLS链接(安全链接)。默认是false
 
 # 生成依赖文件 pip freeze > requirements.txt
 # 安装依赖文件 pip install -r requirement.txt

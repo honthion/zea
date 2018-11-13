@@ -18,15 +18,15 @@ turku_mysql_dbname = cf.get("turku_data_base", "mysql_dbname")
 
 turku_login_url = cf.get("turku_host", "host") + cf.get("turku_host", "login_api")
 
-notify_email_subject = cf.get("monitor_notify", "email_subject")
-
-notify_email_manager = cf.get("monitor_notify", "email_manager")
-
 wx_corpid = cf.get("weixin", "corpid").encode('unicode-escape').decode('string_escape')
 
-wx_mjb_agentid = cf.get("weixin", "mjb_agentid").encode('unicode-escape').decode('string_escape')
+wx_mjb_agentid_lv1 = cf.get("weixin", "mjb_agentid_lv1").encode('unicode-escape').decode('string_escape')
 
-wx_mjb_secret = cf.get("weixin", "mjb_secret").encode('unicode-escape').decode('string_escape')
+wx_mjb_secret_lv1 = cf.get("weixin", "mjb_secret_lv1").encode('unicode-escape').decode('string_escape')
+
+wx_mjb_agentid_lv2 = cf.get("weixin", "mjb_agentid_lv2").encode('unicode-escape').decode('string_escape')
+
+wx_mjb_secret_lv2 = cf.get("weixin", "mjb_secret_lv2").encode('unicode-escape').decode('string_escape')
 
 wx_get_token_url = cf.get("weixin", "get_token_url").encode('unicode-escape').decode('string_escape')
 

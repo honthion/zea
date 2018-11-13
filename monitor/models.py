@@ -29,9 +29,8 @@ class Group(models.Model):
     ctime = models.DateTimeField(auto_now_add=True, null=False)  # 创建时间
     utime = models.DateTimeField(auto_now=True, null=False)  # 修改时间
     gro_name = models.CharField(max_length=100, null=False, blank=False, unique=True)  # 名称
-    notify_phone_no = models.CharField(max_length=1024, default='', null=False)  # 需要通知的电话号码
-    notify_email = models.CharField(max_length=1024, default='', null=False)  # 需要通知的电话号码
-    notify_wechat = models.CharField(max_length=1024, default='', null=False)  # 需要通知的微信号
+    notify_wx_tags_id = models.CharField(max_length=1024, default='', null=False)  # 需要通知的微信标签Id
+    notify_wx_tags = models.CharField(max_length=1024, default='', null=False)  # 需要通知的微信标签名称
     gro_desc = models.CharField(max_length=1024, default='', null=False, blank=True)  # 描述
     gro_status = models.PositiveSmallIntegerField(default=1, null=False)  # 状态
 

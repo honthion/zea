@@ -33,7 +33,7 @@ def get_token():
     while retry < 3:
         try:
             request_url = my_conf.wx_get_token_url + (
-                    '?corpid=%s&corpsecret=%s' % (my_conf.wx_corpid, my_conf.wx_mjb_secret))
+                    '?corpid=%s&corpsecret=%s' % (my_conf.wx_corpid, my_conf.wx_mjb_secret_lv1))
             log.info("request_url:%s" % (request_url))
             response_str = requests.get(request_url).text
             log.info("response_str:%s" % (response_str))
@@ -78,7 +78,7 @@ def send_message(tagids, msg):
 
 
 # 获取微信标签
-def get_label_list():
+def get_tag_list():
     conn = get_redis_connection("default")
     tag_list = conn.get(wx_mjb_tag_list_key)
     if tag_list:
@@ -87,7 +87,7 @@ def get_label_list():
     try:
         retry = 0
         while retry < 3:
-            request_url = my_conf.wx_get_label_list +  ('?access_token=%s' % (get_token()))
+            request_url = my_conf.wx_get_label_list + ('?access_token=%s' % (get_token()))
             log.info("request_url:%s" % (request_url))
             response_str = requests.get(request_url).text
             log.info("response_str:%s" % (response_str))
@@ -98,7 +98,7 @@ def get_label_list():
                 tag_list = json.dumps(taglist)
                 log.info("get tag list success,tag_list:%s" % (tag_list))
                 # 保存至redis
-                conn.set(wx_mjb_token_key, tag_list, 60)
+                conn.set(wx_mjb_tag_list_key, tag_list, 60)
                 return taglist
             retry = retry + 1
     except  Exception as e:
@@ -115,13 +115,13 @@ def get_work_dict(tagids, msg):
     content = {}
     content['content'] = msg
     try:
-        work_dict['agentid'] = my_conf.wx_mjb_agentid
+        work_dict['agentid'] = my_conf.wx_mjb_agentid_lv1
         work_dict['msgtype'] = u'text'
         work_dict['text'] = content
         work_dict['toparty'] = ''
         work_dict['safe'] = '0'
         # 格式要求竖线
-        work_dict['totag'] = tagids.replace(',', '|')
+        work_dict['totag'] = "|".join(tagids)
         work_dict['touser'] = ''
     except Exception as e:
         log.error("apply_dict fail" + e.message)
@@ -189,7 +189,7 @@ def get_apply_info():
     while retry < 3:
         try:
             request_url = my_conf.wx_apply_info_url + (
-                    '?access_token=%s&agentid=%s' % (get_token(), my_conf.wx_mjb_agentid))
+                    '?access_token=%s&agentid=%s' % (get_token(), my_conf.wx_mjb_agentid_lv1))
             log.info("request_url:%s" % (request_url))
             response_str = requests.get(request_url).text
             log.info("response_str:%s" % (response_str))

@@ -18,6 +18,8 @@ from rest_framework.decorators import detail_route
 from monitor.models import Item, Group, GroupItem, Record
 from monitor.pojo.my_enum import *
 from monitor.serializers import ItemSerializer, UserSerializer
+import monitor.my_scheduler.wechat as wc
+import re
 
 log = logging.getLogger(__name__)
 
@@ -122,24 +124,20 @@ def groups(request):
             gro_name = requestBody.get('gro_name')
             gro_desc = requestBody.get('gro_desc')
             gro_status = requestBody.get('gro_status')
-            notify_phone_no = requestBody.get('notify_phone_no', "")
-            notify_email = requestBody.get('notify_email', "")
+            notify_wx_tags = requestBody.get('notify_wx_tags')
+            notify_wx_tags_id = requestBody.get('notify_wx_tags_id')
             item_str = requestBody.get('item_str')
             # todo 值没有校验
             # 插入
-            print gro_name
-            print gro_desc
-            print gro_status
-            print notify_phone_no
-            print notify_email
             group = Group.objects.create(gro_name=gro_name, gro_desc=gro_desc, gro_status=gro_status,
-                                         notify_email=notify_email,
-                                         notify_phone_no=notify_phone_no, ctime=datetime.now(), utime=datetime.now())
+                                         notify_wx_tags=notify_wx_tags,
+                                         notify_wx_tags_id=notify_wx_tags_id, ctime=datetime.now(),
+                                         utime=datetime.now())
             # 批量插入中间表
             item_ids = item_str.split()
             gro_item_list = []
             for item_id in item_ids:
-                gro_item_list.append(GroupItem(gro_id=group.id, item_id=item_id))
+                gro_item_list.append(GroupItem(gro_id=group.id, mon_id=item_id))
             GroupItem.objects.bulk_create(gro_item_list)
     except Exception as e:
         print ("Exception!" + e.message)
@@ -150,10 +148,11 @@ def groups(request):
 # 获取新增分组页
 @login_required(login_url='/login')
 def group(request):
-    print (request.user.username)
     # 需要获取 所有监控项
     itemQuerySet = Item.objects.all()
-    return render(request, 'monitor/monitor-group-edit.html', {'item_list': itemQuerySet})
+    # 微信标签
+    tag_list = wc.get_tag_list()
+    return render(request, 'monitor/monitor-group-edit.html', {'item_list': itemQuerySet, "tag_list": tag_list})
 
 
 # 包含单个状态修改
@@ -167,12 +166,15 @@ def groupSingle(request, gro_id='0'):
                 requestBody = json.loads(request.body)
                 group.gro_status = requestBody.get('gro_status')
                 gro_name = requestBody.get('gro_name')
+                # 判断名称是否重复
+                if Group.objects.filter(gro_name=gro_name).exclude(id=gro_id):
+                    return JsonResponse({"success": False, "msg": 'name has exist', "data": ""})
                 gro_desc = requestBody.get('gro_desc')
                 if gro_name != None and gro_name != '' and gro_desc != None and gro_desc != '':
                     group.gro_name = requestBody.get('gro_name')
                     group.gro_status = requestBody.get('gro_status')
-                    group.notify_phone_no = requestBody.get('notify_phone_no')
-                    group.notify_email = requestBody.get('notify_email')
+                    group.notify_wx_tags = requestBody.get('notify_wx_tags')
+                    group.notify_wx_tags_id = requestBody.get('notify_wx_tags_id')
                     # 获取item_ids
                     item_str = requestBody.get('item_str')
                     item_ids = item_str.split()
@@ -181,7 +183,7 @@ def groupSingle(request, gro_id='0'):
                     # 新增现有的
                     gro_item_list = []
                     for item_id in item_ids:
-                        gro_item_list.append(GroupItem(gro_id=gro_id, item_id=item_id))
+                        gro_item_list.append(GroupItem(gro_id=gro_id, mon_id=item_id))
                     GroupItem.objects.bulk_create(gro_item_list)
                 # 修改现有的
                 group.save()
@@ -195,13 +197,21 @@ def groupSingle(request, gro_id='0'):
             # 获取中间表的itemId集合数据
             groItemSet = GroupItem.objects.filter(gro_id=gro_id)
             for gro_item in groItemSet:
-                item_set.add(gro_item.item_id)
+                item_set.add(gro_item.mon_id)
             for itemQuery in itemQuerySet:
                 item_vo = ItemVo.get_item(itemQuery)
                 if itemQuery.id in item_set:
                     item_vo.isSelect = True
                 item_list.append(item_vo)
-            return render(request, 'monitor/monitor-group-edit.html', {'item_list': item_list, "group": group})
+            # 获取tagId
+            wx_tags = group.notify_wx_tags_id.split(",")
+            wx_tag_ids = []
+            for tag in wx_tags:
+                if re.match('^\d+$', tag):
+                    wx_tag_ids.append(int(tag))
+            tag_list = wc.get_tag_list()
+            return render(request, 'monitor/monitor-group-edit.html',
+                          {'item_list': item_list, "group": group, "wx_tags": wx_tag_ids, "tag_list": tag_list})
         else:
             pass
     except Exception as e:
@@ -219,7 +229,7 @@ def recordSingle(request, record_id='0'):
             if record_id != 0:
                 record = Record.objects.get(id=record_id)
                 requestBody = json.loads(request.body)
-                record.operator= request.user.username
+                record.operator = request.user.username
                 record.remark = requestBody.get('remark')
                 record.save()
         elif 'GET' == requestMethod:

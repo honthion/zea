@@ -52,26 +52,26 @@
             <div class="formControls col-xs-8 col-sm-9 skin-minimal">
                 {% for item in item_list %}
                     <div class="check-box">
-                        <input type="checkbox" name="monitor_item" value="{{ item.id }}"
-                               {% if item.isSelect %}checked{% endif %}>{{ item.mon_title }}
+                        <input type="checkbox" name="monitor_item" value="{{ item.id }}" id="mon_{{ item.id }}"
+                               {% if item.isSelect %}checked{% endif %}>
+                        <label for="mon_{{ item.id }}">{{ item.mon_title }}</label>
                     </div>
                 {% endfor %}
             </div>
         </div>
         <div class="row cl">
-            <label class="form-label col-xs-4 col-sm-2">电话通知：</label>
-            <div class="formControls col-xs-8 col-sm-9">
-                <input class="input-text" placeholder="" id="notify_phone_no"
-                       name="notify_phone_no" value="{{ group.notify_phone_no }}">
+            <label class="form-label col-xs-4 col-sm-2">微信标签：</label>
+            <div class="formControls col-xs-8 col-sm-9 skin-minimal">
+                {% for tag in tag_list %}
+                    <div class="check-box">
+                        <input type="checkbox" name="monitor_wx_tag" value="{{ tag.tagid }}" id="tag_{{ tag.tagid }}" tagname="{{ tag.tagname }}"
+                               {% if tag.tagid in wx_tags %}checked{% endif %}>
+                        <label for="tag_{{ tag.tagid }}">{{ tag.tagname }}</label>
+                    </div>
+                {% endfor %}
             </div>
         </div>
-        <div class="row cl">
-            <label class="form-label col-xs-4 col-sm-2">邮箱通知：</label>
-            <div class="formControls col-xs-8 col-sm-9">
-                <input class="input-text" placeholder="" id="notify_email"
-                       name="notify_email" value="{{ group.notify_email }}">
-            </div>
-        </div>
+
         <div class="row cl">
             <label class="form-label col-xs-4 col-sm-2">开启：</label>
             <div class="formControls col-xs-8 col-sm-7 skin-minimal">
@@ -166,10 +166,9 @@
                 requestData = {};
                 requestData.gro_name = $('#gro_name').val();
                 requestData.gro_desc = $('#gro_desc').val();
-                requestData.notify_phone_no = $('#notify_phone_no').val().trim();
-                requestData.notify_email = $('#notify_email').val().trim();
                 requestData.gro_status = $("#gro_status:checked").val() ? 1 : 0;
                 requestData.item_str = '';
+
                 obj = document.getElementsByName("monitor_item");
                 check_val = [];
                 for (k in obj) {
@@ -178,9 +177,18 @@
                 }
                 requestData.item_str = check_val.join(" ");
 
-                if ((!requestData.notify_email && !requestData.notify_phone_no)
-                    || (requestData.notify_email && requestData.notify_phone_no)) {
-                    layer.msg('邮箱通知、电话通知只且只能填写一项', {icon: 2, time: 1000});
+                wx_check = document.getElementsByName("monitor_wx_tag");
+                check_val_id = [];
+                check_val_name = [];
+                for (k in wx_check) {
+                    if (wx_check[k].checked)
+                        check_val_id.push(wx_check[k].value);
+                }
+                console.log(check_val_id)
+                requestData.notify_wx_tags_id = check_val_id.join(",");
+
+                if (! requestData.notify_wx_tags_id){
+                    layer.msg('微信通知必填', {icon: 2, time: 1000});
                     requestData = {};
                     return;
                 }
@@ -195,8 +203,8 @@
                     data: JSON.stringify({
                         gro_name: requestData.gro_name,
                         gro_desc: requestData.gro_desc,
-                        notify_phone_no: requestData.notify_phone_no,
-                        notify_email: requestData.notify_email,
+                        notify_wx_tags_id: requestData.notify_wx_tags_id,
+                        notify_wx_tags: '',
                         gro_status: requestData.gro_status,
                         item_str: requestData.item_str,
                     }),

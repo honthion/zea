@@ -51,6 +51,7 @@ def send_message(item_enum, task_success, remark):
     # 只有失败才进行推行
     mon_id = item_enum.value.get("id")
     mon_title = item_enum.value.get("mon_title")
+    wx_desc = item_enum.value.get("mon_wx_desc")
     notify_msg = ''
     # 查询需要发送的人
 
@@ -58,27 +59,29 @@ def send_message(item_enum, task_success, remark):
         notify_msg = mon_title + "失败，level=1"
 
     # 获取email 和 电话号码
-    cursor = connection.cursor()
-    cursor.execute(
-        " SELECT GROUP_CONCAT(g.`notify_email`),GROUP_CONCAT(g.`notify_phone_no`) "
-        "FROM `monitor_group` g "
-        "LEFT JOIN `monitor_group_item` gi ON gi.`gro_id` = g.`id`  "
-        "WHERE gi.`mon_id` = %d AND g.`gro_status`=1" % (
-            mon_id))
-    raw = cursor.fetchone()
-    email_str = raw[0].encode('unicode-escape').decode('string_escape')
-    phone_str = raw[1].encode('unicode-escape').decode('string_escape')
-    # todo 如果未空的话还需要判断
-    email_list = split_comma_to_set(email_str)
-    phone_list = split_comma_to_set(phone_str)
-    # 发送邮件
-    if len(email_list) > 0:
-        email_send.send(my_conf.notify_email_subject, notify_msg,
-                        email_list)
+    wx_tag_id = ''
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT GROUP_CONCAT(g.`notify_wx_tags_id`) FROM `monitor_group` g LEFT JOIN `monitor_group_item` gi ON gi.`gro_id` = g.`id`  WHERE gi.`mon_id` = %d AND g.`gro_status`=1" % (
+                mon_id))
+        raw = cursor.fetchone()
+        wx_tag_id = raw[0].encode('unicode-escape').decode('string_escape')
+    except Exception as e:
+        log.error("get sql fail.")
     # 发送微信
-    wechat.send_message(notify_msg)
+    if wx_tag_id:
+        wechat.send_message(split_to_set(wx_tag_id), "MJB-监控预警</br>预警项：%s</br>描述：%s" % (mon_title, wx_desc))
 
 
 def split_comma_to_set(str):
     str_list = str.split()
     return [] if len(str_list) == 0 else list(set(str_list))
+
+# 文本
+def split_to_set(str):
+    str_list = str.split(',')
+    li = ([] if len(str_list) == 0 else list(set(str_list)))
+    if '' in li:
+        li.remove('')
+    return li
