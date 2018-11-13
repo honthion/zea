@@ -26,10 +26,12 @@ django-haystack==2.8.1
 django-ipware==2.1.0
 django-local-settings==1.0b9
 django-pagedown==1.0.6
+django-redis==4.9.0
 django-uuslug==1.1.8
 djangorestframework==3.6.3
 djangorestframework-jwt==1.10.0
 DjangoRestless==0.0.10
+dpkt==1.9.1
 enum34==1.1.6
 environ==1.0
 funcsigs==1.0.2
@@ -68,6 +70,7 @@ python-slugify==1.2.6
 pytz==2017.2
 raven==6.9.0
 rcssmin==1.0.6
+redis==2.10.6
 requests==2.17.3
 rjsmin==1.0.12
 scandir==1.9.0
