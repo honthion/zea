@@ -10,12 +10,12 @@ sys = os.name
 CONF_DIR = ''
 
 if sys == 'nt':
-    CONF_DIR = 'C://Users//user//Dropbox//work//yunfeng//doc//monitor//setting.ini'
+    CONF_DIR = 'C://Users//user//Dropbox//work//yunfeng//doc//monitor//settings.ini'
     DEBUG = True
     ALLOWED_HOSTS = ['*']
 
 elif sys == 'posix':
-    CONF_DIR = '/data/config/rauma/setting.ini'
+    CONF_DIR = '/data/config/rauma/settings.ini'
     DEBUG = False
     ALLOWED_HOSTS = ['*']
 
