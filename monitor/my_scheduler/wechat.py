@@ -18,6 +18,7 @@ log = logging.getLogger(__name__)
 
 wx_mjb_token_key = "sln:rauma:db:wx:token"
 wx_mjb_apply_info_key = "sln:rauma:db:wx:apply_info"
+wx_mjb_tag_list_key = "sln:rauma:db:wx:label_list"
 
 
 # 获取token并存放在redis中
@@ -50,7 +51,7 @@ def get_token():
     log.error("get token fail.")
 
 
-# 获取
+# 发送消息
 def send_message(tagids, msg):
     if not msg:
         log.error("msg is null")
@@ -74,6 +75,34 @@ def send_message(tagids, msg):
         except Exception as e:
             log.error("send_message fail,retry:%d,msg:%s" % (retry, e.message))
             retry = retry + 1
+
+
+# 获取微信标签
+def get_label_list():
+    conn = get_redis_connection("default")
+    tag_list = conn.get(wx_mjb_tag_list_key)
+    if tag_list:
+        log.info("get tag list success,tag_list:%s" % (tag_list))
+        return json.loads(tag_list)
+    try:
+        retry = 0
+        while retry < 3:
+            request_url = my_conf.wx_get_label_list +  ('?access_token=%s' % (get_token()))
+            log.info("request_url:%s" % (request_url))
+            response_str = requests.get(request_url).text
+            log.info("response_str:%s" % (response_str))
+            response_map = json.loads(response_str)
+            taglist = response_map.get('taglist', [])
+            errcode = response_map.get('errcode', '-1')
+            if errcode == 0 and taglist:
+                tag_list = json.dumps(taglist)
+                log.info("get tag list success,tag_list:%s" % (tag_list))
+                # 保存至redis
+                conn.set(wx_mjb_token_key, tag_list, 60)
+                return taglist
+            retry = retry + 1
+    except  Exception as e:
+        log.error("get tag list fail,retry:%d,msg:%s" % (retry, e.message))
 
 
 # 获取传递的dict

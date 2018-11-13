@@ -33,3 +33,5 @@ wx_get_token_url = cf.get("weixin", "get_token_url").encode('unicode-escape').de
 wx_apply_info_url = cf.get("weixin", "apply_info_url").encode('unicode-escape').decode('string_escape')
 
 wx_send_msg_url = cf.get("weixin", "send_msg_url").encode('unicode-escape').decode('string_escape')
+
+wx_get_label_list = cf.get("weixin", "get_label_list").encode('unicode-escape').decode('string_escape')
