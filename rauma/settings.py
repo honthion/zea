@@ -1,69 +1,51 @@
 # -*- coding: utf-8 -*-
 
 import os
+import ConfigParser
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SECRET_KEY = 'cm*oz%(rg6s#b%s_$gd4#zbc2ud(2m38czmpf*dcubw+f8t7#m'
 
+conf = ConfigParser.ConfigParser()
 sys = os.name
-LOG_FILE_PATH = ''
+CONF_DIR = ''
+
 if sys == 'nt':
-    CONF_DIR = 'C:\Users\user\Dropbox\work\yunfeng\doc\monitor\setting.ini'
+    CONF_DIR = 'C://Users//user//Dropbox//work//yunfeng//doc//monitor//setting.ini'
     DEBUG = True
     ALLOWED_HOSTS = ['*']
-    LOG_FILE_PATH = 'D://data//rauma//rauma.log'
-    # mysql
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'polls',
-            'USER': 'mysql',
-            'PASSWORD': '123456',
-            'HOST': '172.16.50.112',
-            'PORT': '3306',
 
-        }
-    }
-    # redis配置
-    CACHES = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://172.16.50.112:6379",
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                "CONNECTION_POOL_KWARGS": {"max_connections": 100},
-                "PASSWORD": "123456",
-            }
-        }
-    }
 elif sys == 'posix':
     CONF_DIR = '/data/config/rauma/setting.ini'
     DEBUG = False
     ALLOWED_HOSTS = ['*']
-    LOG_FILE_PATH = '/data/log/rauma/rauma.log'
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'rauma',
-            'USER': 'miaojiebeijiankong_rw',
-            'PASSWORD': 'Njk5NjNlYjk5M2Nk',
-            'HOST': '172.16.50.131',
-            'PORT': '3306',
 
+conf.read(CONF_DIR)
+# 密钥
+SECRET_KEY = conf.get('global', 'SECRET_KEY'),
+# mysql
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': conf.get('global', 'mysql_dbname'),
+        'USER': conf.get('global', 'mysql_username'),
+        'PASSWORD': conf.get('global', 'mysql_password'),
+        'HOST': conf.get('global', 'mysql_host'),
+        'PORT': conf.get('global', 'mysql_port'),
+
+    }
+}
+# redis配置
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://" + conf.get('global', 'redis_url'),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100},
+            "PASSWORD": conf.get('global', 'redis_password'),
         }
     }
-    # redis配置
-    CACHES = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://172.16.50.112:6379",
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                "CONNECTION_POOL_KWARGS": {"max_connections": 100},
-                "PASSWORD": "123456",
-            }
-        }
-    }
+}
 
 # Application definition
 INSTALLED_APPS = [
@@ -221,7 +203,7 @@ LOGGING = {
         'logfile': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': LOG_FILE_PATH,
+            'filename': conf.get('global', 'log_file_path'),
             'when': 'midnight',
             'interval': 1,
             'backupCount': 100,

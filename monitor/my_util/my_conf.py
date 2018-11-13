@@ -3,7 +3,8 @@ from rauma import settings
 
 cf = configparser.ConfigParser()
 conf_path = settings.CONF_DIR
-cf.read(conf_path)
+print conf_path
+cf.read(conf_path, encoding='UTF-8')
 # truku data base config
 turku_mysql_host = cf.get("turku_data_base", "mysql_host")
 
