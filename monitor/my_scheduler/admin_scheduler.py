@@ -10,6 +10,7 @@ import logging
 import base_task
 from monitor.models import *
 from monitor.pojo.my_enum import *
+import monitor.my_util.my_db as my_db
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 def account_login():
     item = Item.objects.filter(mon_title=ItemEnum.base_task.value.get('mon_title'))
     if item and item[0].mon_status == 1:
+        my_db.close_old_connections()
         base_task.account_login()
 
 
