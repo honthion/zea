@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <base href="{{ get_base_url }}"/>
+  <base href="{{ 0| get_base_url }}"/>
     <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
@@ -14,16 +14,18 @@
 <script type="text/javascript" src="static/lib/html5shiv.js"></script>
 <script type="text/javascript" src="static/lib/respond.min.js"></script>
 <![endif]-->
-    <link rel="stylesheet" type="text/css" href="static/h-ui/css/H-ui.min.css"/>
-    <link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/H-ui.admin.css"/>
-    <link rel="stylesheet" type="text/css" href="static/lib/Hui-iconfont/1.0.8/iconfont.css"/>
-    <link rel="stylesheet" type="text/css" href="static/h-ui.admin/skin/default/skin.css" id="skin"/>
-    <link rel="stylesheet" type="text/css" href="static/h-ui.admin/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ 'static/h-ui/css/H-ui.min.css'|get_base_url }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ 'static/h-ui.admin/css/H-ui.admin.css'| get_base_url }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ 'static/lib/Hui-iconfont/1.0.8/iconfont.css'|get_base_url }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ 'static/h-ui.admin/skin/default/skin.css'|get_base_url }}"
+          id="skin"/>
+    <link rel="stylesheet" type="text/css" href="{{ 'static/h-ui.admin/css/style.css'| get_base_url }}"/>
     <!--[if IE 6]>
 <script type="text/javascript" src="static/lib/DD_belatedPNG_0.0.8a-min.js" ></script>
 <script>DD_belatedPNG.fix('*');</script>
+
 <![endif]-->
-    <title>监控项列表</title>
+    <title>MJB monitor</title>
 </head>
 <body>
 <nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 配置列表 <span
@@ -78,15 +80,17 @@
     </div>
 </div>
 <!--_footer 作为公共模版分离出去-->
-<script type="text/javascript" src="static/lib/jquery/1.9.1/jquery.min.js"></script>
-<script type="text/javascript" src="static/lib/layer/2.4/layer.js"></script>
-<script type="text/javascript" src="static/h-ui/js/H-ui.min.js"></script>
-<script type="text/javascript" src="static/h-ui.admin/js/H-ui.admin.js"></script> <!--/_footer 作为公共模版分离出去-->
+<script type="text/javascript" src="{{ 'static/lib/jquery/1.9.1/jquery.min.js'|get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/layer/2.4/layer.js'|get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/h-ui/js/H-ui.min.js'|get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/h-ui.admin/js/H-ui.admin.js'| get_base_url }}"></script>
+<!--/_footer 作为公共模版分离出去-->
 
 <!--请在下方写此页面业务相关的脚本-->
-<script type="text/javascript" src="static/lib/My97DatePicker/4.8/WdatePicker.js"></script>
-<script type="text/javascript" src="static/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="static/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript" src="{{ 'static/lib/My97DatePicker/4.8/WdatePicker.js'|get_base_url }}"></script>
+<script type="text/javascript"
+        src="{{ 'static/lib/datatables/1.10.0/jquery.dataTables.min.js'|get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/laypage/1.2/laypage.js'| get_base_url }}"></script>
 <script type="text/javascript">
 
     var csrftoken = $.cookie('csrftoken');

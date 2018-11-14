@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <base href="{{0| get_base_url }}" />
+    <base href="{{ 0| get_base_url }}"/>
     <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
@@ -31,7 +31,7 @@
 <div class="header"></div>
 <div class="loginWraper">
     <div id="loginform" class="loginBox">
-        <form class="form form-horizontal" action="login" method="post">
+        <form class="form form-horizontal" action="{{ 'login'|get_base_url }}" method="post">
             {% csrf_token %}
             {% if errmsg is not None %}
                 <div class="Huialert Huialert-error"><i class="icon-remove"></i>{{ errmsg }}</div>
