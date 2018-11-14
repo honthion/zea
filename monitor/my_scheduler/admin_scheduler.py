@@ -7,7 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 import logging
-import base_task
+import base_task, account_task
 from monitor.models import *
 from monitor.pojo.my_enum import *
 import monitor.my_util.my_db as my_db
@@ -39,6 +39,16 @@ def account_login():
     if item and item[0].mon_status == 1:
         my_db.close_old_connections()
         base_task.account_login()
+
+
+# 今日注册
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')),replace_existing=True)
+def today_register():
+    item = Item.objects.filter(mon_title=ItemEnum.today_register.value.get('mon_title'))
+    if item and item[0].mon_status == 1:
+        my_db.close_old_connections()
+        account_task.today_register()
 
 
 register_events(scheduler)
