@@ -22,23 +22,23 @@ class MonitorStatusEnum(BaseEnum):
     recovery = EnumType(3, u'恢复')
 
 
-
 @unique
 class ItemEnum(Enum):
     base_task = {"id": 1,
                  "mon_type": 1,
                  "mon_title": "账户登陆",
-                 "mon_trigger": "0/5 * * * *",
+                 "mon_trigger": "0/1 * * * *",
                  "mon_trigger_desc": "轮询每隔5分钟",
-                 "mon_wx_desc": "无法登陆",
+                 "msg1": "无法登陆",
                  "mon_desc": "模拟用户登陆，如果无法登陆，则告警level=1"}
-
-    # today_register_account = Item(id=2,
-    #                               mon_type=2,
-    #                               mon_title="当日注册用户",
-    #                               mon_trigger="0/30 10-23 * * *",
-    #                               mon_trigger_desc="每天从10:00-00:00，每0.5小时查询一次",
-    #                               mon_desc="如果每小时注册量=0, level=1; 注册量<昨天同比30%，level=2")
+    today_register = {"id": 2,
+                      "mon_type": 2,
+                      "mon_title": "当日注册用户",
+                      "mon_trigger": "0/30 10-23 * * *",
+                      "mon_trigger_desc": "每天从10:00-00:00，每0.5小时查询一次",
+                      "msg1": "前一小时无注册量",
+                      "msg2": "注册量<昨天同比30%",
+                      "mon_desc": "如果每小时注册量=0, level=1; 注册量<昨天同比30%，level=2"}
     # today_loan_amount = Item(id=3,
     #                          mon_type=2,
     #                          mon_title="当日放款金额",

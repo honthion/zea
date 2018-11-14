@@ -156,7 +156,7 @@ def group(request):
     # 需要获取 所有监控项
     itemQuerySet = Item.objects.all()
     # 微信标签
-    tag_list = wc.get_tag_list()
+    tag_list = wc.get_tag_list(0)
     return render(request, 'monitor/monitor-group-edit.html', {'item_list': itemQuerySet, "tag_list": tag_list})
 
 
@@ -214,7 +214,7 @@ def groupSingle(request, gro_id='0'):
             for tag in wx_tags:
                 if re.match('^\d+$', tag):
                     wx_tag_ids.append(int(tag))
-            tag_list = wc.get_tag_list()
+            tag_list = wc.get_tag_list(0)
             return render(request, 'monitor/monitor-group-edit.html',
                           {'item_list': item_list, "group": group, "wx_tags": wx_tag_ids, "tag_list": tag_list})
         else:

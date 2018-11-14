@@ -16,16 +16,17 @@ import json
 
 log = logging.getLogger(__name__)
 
-wx_mjb_token_key = "sln:rauma:db:wx:token"
+wx_mjb_token_key = "sln:rauma:db:wx:token:%d"
 wx_mjb_apply_info_key = "sln:rauma:db:wx:apply_info"
 wx_mjb_tag_list_key = "sln:rauma:db:wx:label_list"
 
 
 # 获取token并存放在redis中
-def get_token():
+def get_token(lv):
     # 先获取redis中的值
     conn = get_redis_connection("default")
-    token = conn.get(wx_mjb_token_key)
+    token_key = wx_mjb_token_key % lv
+    token = conn.get(token_key)
     if token is not None and len(token) > 0:
         return token
     # 通过接口获取
@@ -33,33 +34,33 @@ def get_token():
     while retry < 3:
         try:
             request_url = my_conf.wx_get_token_url + (
-                    '?corpid=%s&corpsecret=%s' % (my_conf.wx_corpid, my_conf.wx_mjb_secret_lv1))
-            log.info("request_url:%s" % (request_url))
+                    '?corpid=%s&corpsecret=%s' % (my_conf.wx_corpid, get_agent_info(lv)[1]))
+            log.info("request_url:%s,lv:%d" % (request_url, lv))
             response_str = requests.get(request_url).text
-            log.info("response_str:%s" % (response_str))
+            log.info("response_str:%s,lv:%d" % (response_str, lv))
             response_map = json.loads(response_str)
             token = response_map.get('access_token', '')
             errcode = response_map.get('errcode', '-1')
             if errcode == 0 and len(token) > 0:
                 log.info("get token success,token:%s" % (token))
                 # 保存至redis
-                conn.set(wx_mjb_token_key, token, 5000)
+                conn.set(token_key, token, 5000)
                 return token
         except Exception as e:
-            log.error("get token fail,retry:%d,msg:%s" % (retry, e.message))
+            log.error("get token fail,lv:%d,retry:%d,msg:%s" % (lv, retry, e.message))
             retry = retry + 1
     log.error("get token fail.")
 
 
 # 发送消息
-def send_message(tagids, msg):
+def send_message(tagids, lv, msg):
     if not msg:
         log.error("msg is null")
         return
-    work_dict = get_work_dict(tagids, msg)
+    work_dict = get_work_dict(tagids, lv, msg)
     if not work_dict:
         log.error("get_work_dict fail")
-    request_url = my_conf.wx_send_msg_url + ('?access_token=%s' % (get_token()))
+    request_url = my_conf.wx_send_msg_url + ('?access_token=%s' % (get_token(lv)))
     log.info("request_url:%s,data:%s" % (request_url, json.dumps(work_dict)))
     header = {
         'dataType': "json",
@@ -78,16 +79,16 @@ def send_message(tagids, msg):
 
 
 # 获取微信标签
-def get_tag_list():
+def get_tag_list(lv):
     conn = get_redis_connection("default")
     tag_list = conn.get(wx_mjb_tag_list_key)
     if tag_list:
         log.info("get tag list success,tag_list:%s" % (tag_list))
         return json.loads(tag_list)
+    retry = 0
     try:
-        retry = 0
         while retry < 3:
-            request_url = my_conf.wx_get_label_list + ('?access_token=%s' % (get_token()))
+            request_url = my_conf.wx_get_label_list + ('?access_token=%s' % (get_token(lv)))
             log.info("request_url:%s" % (request_url))
             response_str = requests.get(request_url).text
             log.info("response_str:%s" % (response_str))
@@ -106,16 +107,16 @@ def get_tag_list():
 
 
 # 获取传递的dict
-def get_work_dict(tagids, msg):
-    apply_dict = get_apply_dict()
-    if not apply_dict:
-        log.error("apply_dict is null")
-        return None
+def get_work_dict(tagids, lv, msg):
+    # apply_dict = get_apply_dict()
+    # if not apply_dict:
+    #     log.error("apply_dict is null")
+    #     return None
     work_dict = {}
     content = {}
     content['content'] = msg
     try:
-        work_dict['agentid'] = my_conf.wx_mjb_agentid_lv1
+        work_dict['agentid'] = get_agent_info(lv)[0]
         work_dict['msgtype'] = u'text'
         work_dict['text'] = content
         work_dict['toparty'] = ''
@@ -127,6 +128,17 @@ def get_work_dict(tagids, msg):
         log.error("apply_dict fail" + e.message)
     log.info("apply_dict return" + json.dumps(work_dict))
     return work_dict
+
+
+def get_agent_info(lv):
+    if lv == 0:
+        return [my_conf.wx_mjb_agentid_lv0, my_conf.wx_mjb_secret_lv0]
+    elif lv == 1:
+        return [my_conf.wx_mjb_agentid_lv1, my_conf.wx_mjb_secret_lv1]
+    elif lv == 2:
+        return [my_conf.wx_mjb_agentid_lv2, my_conf.wx_mjb_secret_lv2]
+    else:
+        return []
 
 
 def get_apply_dict():
