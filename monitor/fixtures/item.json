@@ -35,7 +35,21 @@
       "utime": "2001-01-01T00:00:00Z",
       "mon_title": "当日放款金额",
       "mon_type": 2,
-      "mon_trigger": "0 0 12-23/1 * * ? *",
+      "mon_trigger": "0 55 9-23/1 * * ? *",
+      "mon_trigger_desc": "每天从10:00-00:00，每0.5小时查询一次",
+      "mon_desc": "如果放款量=0, level=1; 放款量<昨天同比50%，level=2",
+      "mon_status": 1
+    }
+  },
+  {
+    "model": "monitor.item",
+    "pk": 4,
+    "fields": {
+      "ctime": "2001-01-01T00:00:00Z",
+      "utime": "2001-01-01T00:00:00Z",
+      "mon_title": "当日回款",
+      "mon_type": 2,
+      "mon_trigger": "0 56 12-23/1 * * ? *",
       "mon_trigger_desc": "每天从12:00-00:00，每个小时查询一次",
       "mon_desc": "如果回款量=0, level=1; 回款率<昨天同比30%，level=2；23:00时的回款率<60%, level=2;",
       "mon_status": 1
@@ -43,7 +57,7 @@
   },
   {
     "model": "monitor.item",
-    "pk": 4,
+    "pk": 5,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2000-01-01T00:00:00Z",
@@ -57,7 +71,7 @@
   },
   {
     "model": "monitor.item",
-    "pk": 5,
+    "pk": 6,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2001-01-01T00:00:00Z",
@@ -71,7 +85,7 @@
   },
   {
     "model": "monitor.item",
-    "pk": 6,
+    "pk": 7,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2001-01-01T00:00:00Z",
@@ -85,7 +99,7 @@
   },
   {
     "model": "monitor.item",
-    "pk": 7,
+    "pk": 8,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2001-01-01T00:00:00Z",
@@ -99,7 +113,7 @@
   },
   {
     "model": "monitor.item",
-    "pk": 8,
+    "pk": 9,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2001-01-01T00:00:00Z",
@@ -113,7 +127,7 @@
   },
   {
     "model": "monitor.item",
-    "pk": 9,
+    "pk": 10,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2001-01-01T00:00:00Z",
