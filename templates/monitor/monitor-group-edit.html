@@ -1,7 +1,10 @@
 <!--_meta 作为公共模版分离出去-->
+{% load my_tags %}
 <!DOCTYPE HTML>
 <html>
 <head>
+    <base href="{{ get_base_url }}"/>
+    <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -64,7 +67,8 @@
             <div class="formControls col-xs-8 col-sm-9 skin-minimal">
                 {% for tag in tag_list %}
                     <div class="check-box">
-                        <input type="checkbox" name="monitor_wx_tag" value="{{ tag.tagid }}" id="tag_{{ tag.tagid }}" tagname="{{ tag.tagname }}"
+                        <input type="checkbox" name="monitor_wx_tag" value="{{ tag.tagid }}" id="tag_{{ tag.tagid }}"
+                               tagname="{{ tag.tagname }}"
                                {% if tag.tagid in wx_tags %}checked{% endif %}>
                         <label for="tag_{{ tag.tagid }}">{{ tag.tagname }}</label>
                     </div>
@@ -108,6 +112,7 @@
 <script type="text/javascript" src="/static/lib/ueditor/1.4.3/lang/zh-cn/zh-cn.js"></script>
 <script type="text/javascript">
 
+    var base_url = $.cookie('base_url');
 
     function group_save_submit() {
         console.log('提交')
@@ -187,16 +192,16 @@
                 console.log(check_val_id)
                 requestData.notify_wx_tags_id = check_val_id.join(",");
 
-                if (! requestData.notify_wx_tags_id){
+                if (!requestData.notify_wx_tags_id) {
                     layer.msg('微信通知必填', {icon: 2, time: 1000});
                     requestData = {};
                     return;
                 }
                 groupId = $('#groupId').val();
                 requestType = groupId > 0 ? 'put' : 'post';
-                requestUrl = groupId > 0 ? '/monitor/groups/{{group.id}}/' : '/monitor/groups/';
+                requestUrl = groupId > 0 ? 'monitor/groups/{{group.id}}/' : 'monitor/groups/';
                 $.ajax({
-                    url: requestUrl,
+                    url: base_url + requestUrl,
                     type: requestType,
                     contentType: "application/json",
                     dataType: "json",

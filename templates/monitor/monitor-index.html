@@ -2,6 +2,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+    <base href="{{ get_base_url }}"/>
+    <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -85,6 +87,7 @@
 <script type="text/javascript" src="/static/lib/laypage/1.2/laypage.js"></script>
 <script type="text/javascript">
 
+    var base_url = $.cookie('base_url');
     var csrftoken = $.cookie('csrftoken');
 
     function csrfSafeMethod(method) {
@@ -110,12 +113,15 @@
         ]
     });
 
-       /*编辑*/
+    /*编辑*/
     function record_remark_edit(title, id, w, h) {
+        console.log(base_url);
+        content = base_url + 'monitor/records/' + id + '/';
+        console.log(content)
         var index = layer.open({
             type: 2,
             title: title,
-            content: '/monitor/records/' + id + "/",
+            content: content,
         });
         layer.full(index);
     }

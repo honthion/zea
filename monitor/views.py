@@ -20,6 +20,7 @@ from monitor.pojo.my_enum import *
 from monitor.serializers import ItemSerializer, UserSerializer
 import monitor.my_scheduler.wechat as wc
 import re
+import monitor.my_util.my_conf as mc
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ log = logging.getLogger(__name__)
 # 首页
 @login_required(login_url='/login')
 def index(request):
+
     return render(request, 'index.html')
 
 
@@ -42,11 +44,12 @@ def login_index(request):
     username = request.POST['username']
     password = request.POST['password']
     user = authenticate(username=username, password=password)
+    base_url = mc.base_url
     if user is not None:
         if user.is_active:
             login(request, user)
             log.info("login account:%s" % (username))
-            return render(request, 'index.html')
+            return render(request, 'index.html', {"base_url": base_url})
         else:
             log.error("disabled account:%s" % (username))
             return render(request, 'login.html', {'errmsg': 'disabled account'})
@@ -83,7 +86,9 @@ def index(request):
                                   "WHERE a.`mon_id`=b.`mon_id` AND a.`utime`=b.`utime`"
                                   "order by  find_in_set(a.`mon_id`,'2,3,1')")
     MonitorTypeEnum.display(1)
-    return render(request, 'monitor/monitor-index.html', {'items': querySet, 'mon_type': MonitorTypeEnum})
+
+    return render(request, 'monitor/monitor-index.html',
+                  {'items': querySet, 'mon_type': MonitorTypeEnum})
 
 
 # 获取所有的监控项

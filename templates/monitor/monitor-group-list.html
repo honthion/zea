@@ -1,6 +1,9 @@
-﻿<!DOCTYPE HTML>
+﻿{% load my_tags %}
+<!DOCTYPE HTML>
 <html>
 <head>
+    <base href="{{ get_base_url }}"/>
+    <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -27,7 +30,7 @@
         class="c-gray en">&gt;</span> 分组列表
 
 
-    <a class="btn btn-primary radius r" data-title="添加分组" data-href="/monitor/group" onclick="Hui_admin_tab(this)"
+    <a class="btn btn-primary radius r" data-title="添加分组" data-href="monitor/group" onclick="Hui_admin_tab(this)"
        style="line-height:1.6em;margin-top:3px;margin-left: 5px"
        href="javascript:;"><i class="Hui-iconfont">&#xe600;</i> 添加分组</a>
     <a class="btn btn-success radius r btn-refresh" id="id_refresh"
@@ -84,6 +87,8 @@
 <script type="text/javascript">
 
     var csrftoken = $.cookie('csrftoken');
+    var base_url = $.cookie('base_url');
+
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -114,7 +119,7 @@
             $.ajax({
                 type: 'put',
                 contentType: "application/json",
-                url: '/monitor/groups/' + id + "/",
+                url: base_url + 'monitor/groups/' + id + "/",
                 dataType: 'json',
                 data: JSON.stringify(({
                     "gro_status": gro_status == 0 ? 1 : 0
@@ -135,7 +140,7 @@
         var index = layer.open({
             type: 2,
             title: title,
-            content: '/monitor/groups/' + id + "/",
+            content: base_url + 'monitor/groups/' + id + "/",
         });
         layer.full(index);
     }
