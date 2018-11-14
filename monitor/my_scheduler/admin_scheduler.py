@@ -35,9 +35,9 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 # 账号登陆
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)
 def account_login():
+    my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.base_task.value.get('mon_title'))
     if item and item[0].mon_status == 1:
-        my_db.close_old_connections()
         base_task.account_login()
 
 
@@ -45,9 +45,9 @@ def account_login():
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')),replace_existing=True)
 def today_register():
+    my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.today_register.value.get('mon_title'))
     if item and item[0].mon_status == 1:
-        my_db.close_old_connections()
         account_task.today_register()
 
 
