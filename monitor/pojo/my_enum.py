@@ -9,6 +9,12 @@ class MonitorTypeEnum(BaseEnum):
     risk = EnumType(3, u'风控系统')
     third = EnumType(4, u'三方接口')
 
+    STATUS_CHOICE = (
+        (1, u'正常'),
+        (2, u'告警中'),
+        (3, u'恢复'),
+    )
+
 
 class MonitorStatusEnum(BaseEnum):
     normal = EnumType(1, u'正常')
