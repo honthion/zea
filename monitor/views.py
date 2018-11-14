@@ -87,7 +87,7 @@ def index(request):
                                   "order by  find_in_set(a.`mon_id`,'2,3,1')")
     MonitorTypeEnum.display(1)
 
-    return render(request, 'monitor-index.html',
+    return render(request, 'monitor/monitor-index.html',
                   {'items': querySet, 'mon_type': MonitorTypeEnum})
 
 
@@ -95,7 +95,7 @@ def index(request):
 @login_required(login_url='/login')
 def items(request):
     querySet = Item.objects.all()
-    return render(request, 'monitor-item-list.html', {'items': querySet})
+    return render(request, 'monitor/monitor-item-list.html', {'items': querySet})
 
 
 # 包含单个状态修改
@@ -122,7 +122,7 @@ def groups(request):
     try:
         if 'GET' == requestMethod:
             querySet = Group.objects.all()
-            return render(request, 'monitor-group-list.html', {'groups': querySet})
+            return render(request, 'monitor/monitor-group-list.html', {'groups': querySet})
         elif 'POST' == requestMethod:
             requestBody = json.loads(request.body)
             gro_status = requestBody.get('gro_status')
@@ -157,7 +157,7 @@ def group(request):
     itemQuerySet = Item.objects.all()
     # 微信标签
     tag_list = wc.get_tag_list()
-    return render(request, 'monitor-group-edit.html', {'item_list': itemQuerySet, "tag_list": tag_list})
+    return render(request, 'monitor/monitor-group-edit.html', {'item_list': itemQuerySet, "tag_list": tag_list})
 
 
 # 包含单个状态修改
@@ -215,7 +215,7 @@ def groupSingle(request, gro_id='0'):
                 if re.match('^\d+$', tag):
                     wx_tag_ids.append(int(tag))
             tag_list = wc.get_tag_list()
-            return render(request, 'monitor-group-edit.html',
+            return render(request, 'monitor/monitor-group-edit.html',
                           {'item_list': item_list, "group": group, "wx_tags": wx_tag_ids, "tag_list": tag_list})
         else:
             pass
@@ -240,7 +240,7 @@ def recordSingle(request, record_id='0'):
         elif 'GET' == requestMethod:
             # 需要获取 分组信息
             record = Record.objects.get(id=record_id)
-            return render(request, 'monitor-record-edit.html', {'record': record})
+            return render(request, 'monitor/monitor-record-edit.html', {'record': record})
         else:
             pass
     except Exception as e:

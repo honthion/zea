@@ -16,4 +16,4 @@ def get_mon_type_name(mon_type):
 # 获取baseurl
 @register.filter
 def get_base_url(a):
-    return my_conf.base_url
+    return my_conf.base_url + a if a != '0' else my_conf.base_url
