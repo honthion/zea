@@ -3,7 +3,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-   <base href="{{ 0| get_base_url }}"/>
+    <base href="{{ 0| get_base_url }}"/>
     <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
@@ -28,7 +28,6 @@
 <![endif]-->
     <title>MJB monitor</title>
 </head>
-
 
 
 <body>
@@ -105,29 +104,39 @@
 
 <!--请在下方写此页面业务相关的脚本-->
 <script type="text/javascript" src="{{ 'static/lib/My97DatePicker/4.8/WdatePicker.js'|get_base_url }}"></script>
-<script type="text/javascript"
-        src="{{ 'static/lib/datatables/1.10.0/jquery.dataTables.min.js'|get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/datatables/1.10.0/jquery.dataTables.min.js'|get_base_url }}"></script>
 <script type="text/javascript" src="{{ 'static/lib/laypage/1.2/laypage.js'| get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/jquery.validation/1.14.0/jquery.validate.js'| get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/jquery.validation/1.14.0/validate-methods.js'| get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/jquery.validation/1.14.0/messages_zh.js'| get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/webuploader/0.1.5/webuploader.min.js'| get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/ueditor/1.4.3/ueditor.all.min.js'| get_base_url }}"></script>
+<script type="text/javascript" src="{{ 'static/lib/ueditor/1.4.3/lang/zh-cn/zh-cn.js'| get_base_url }}"></script>
+
+
 <script type="text/javascript">
 
     var base_url = $.cookie('base_url');
 
+    var csrftoken = $.cookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+
     function group_save_submit() {
         console.log('提交')
-        var csrftoken = $.cookie('csrftoken');
 
-        function csrfSafeMethod(method) {
-            // these HTTP methods do not require CSRF protection
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
-
-        $.ajaxSetup({
-            beforeSend: function (xhr, settings) {
-                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
-                }
-            }
-        });
     }
 
 
