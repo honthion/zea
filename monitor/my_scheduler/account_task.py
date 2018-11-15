@@ -43,7 +43,7 @@ def today_register():
             ""
             "SELECT  COUNT(0) FROM `user`"
             "WHERE `registerTime` BETWEEN DATE(DATE_SUB(NOW(),INTERVAL 1 DAY))  AND  DATE_SUB(NOW(), INTERVAL 1 DAY);")
-        # [每小时注册量，昨日同期注册量]
+        # [每小时注册量，今日注册量，昨日同期注册量]
         count = [row[0] for row in cursor.fetchall()]
         # 如果每小时注册量=0, level=1; 注册量<昨天同比30%，level=2
         if not count:
@@ -53,7 +53,7 @@ def today_register():
             raise (TaskException(item, lv, item.value.get('msg1')))
         if count[1] and count[2] and count[1] < count[2] * 0.3:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg2')))
+            raise (TaskException(item, lv, item.value.get('msg2') % (count[1], count[2])))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -103,7 +103,7 @@ def today_loan_amount():
             raise (TaskException(item, lv, item.value.get('msg1')))
         if count[1] and count[0] < count[1] * 0.5:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg2')))
+            raise (TaskException(item, lv, item.value.get('msg2') % (count[0], count[1])))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -152,10 +152,15 @@ def today_repay():
 
             "UNION "
 
-            "SELECT COUNT(`primeCost`)"
-            "FROM `credit_order`"
-            "WHERE  DATE(`latestPaymentDate`)= DATE(DATE_SUB(NOW(),INTERVAL 1 DAY)) ")
-        # [今日还款数，今日应还款数，昨日同期还款数，昨日应还款数]
+            "SELECT "
+            "( SELECT COUNT(`primeCost`) "
+            "FROM `credit_order` "
+            "WHERE `paymentDate` BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND DATE_SUB(NOW(), INTERVAL 1 DAY) AND `repaymentState` = 1 )"
+            " / "
+            "( SELECT COUNT(`primeCost`)"
+            " FROM `credit_order` "
+            "WHERE DATE(`latestPaymentDate`) = DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) )")
+        # [今日还款数，今日应还款数，昨日还款率]
         count = [row[0] for row in cursor.fetchall()]
         # 如果回款量=0, level=1; 回款率 < 昨天同比30%，level=2；当天23:00时的回款率<60%, level=2;
         if not count:
@@ -163,21 +168,22 @@ def today_repay():
         if count[0] == 0:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1')))
-        if count[1] and count[3] and float(count[0]) / count[1] < float(count[2]) / count[3] * 0.3:
+        today = float(count[0]) / count[1]
+        if today < count[2] * 0.3:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg2')))
+            raise (TaskException(item, lv, item.value.get('msg2') % (today, count[2])))
         # 如果当前时间与23点时间差值在600s（10分钟）范围内
         is23clock = abs(time_util.gettime(23) - time.time()) < 600
-        if is23clock and float(count[0]) / count[1] < 0.6:
+        if is23clock and today < 0.6:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg3')))
+            raise (TaskException(item, lv, item.value.get('msg3') % today))
         task_success = True
     except TaskException as te:
         msg = te.msg
-        log.error("today_loan_amount alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+        log.error("today_repay alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
     except Exception as e:
-        msg = "today_loan_amount fail."
-        log.error("today_loan_amount fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+        msg = "today_repay fail."
+        log.error("today_repay fail.data:%s,msg:%s" % (json.dumps(count), e.message))
     finally:
         if db:
             db.close()
@@ -211,7 +217,7 @@ def repayment_sms():
             "AND  `deliver_time` >DATE_SUB(NOW(),INTERVAL 1 DAY) "
             "AND `msg` REGEXP '^秒借呗.*您本期账单.*请知悉，谢谢！$' ")
         # [短信发送条数]
-        count_sms = [row[0] for row in cursor_lasvegas.fetchall()]
+        count_sms = cursor_lasvegas.fetchone()
         # 语音发送
         cursor_turku = db_turku.cursor()
         cursor_turku.execute(
@@ -221,8 +227,7 @@ def repayment_sms():
             "AND `operation_status`=1 "
             "AND `ctime`>DATE_SUB(NOW(),INTERVAL 1 DAY)")
         # [短信发送条数]
-        count_voice = [row[0] for row in cursor_turku.fetchall()]
-
+        count_voice = cursor_turku.fetchone()
         if not (count_sms and count_voice):
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count_sms[0] == 0 or count_voice[0] == 0:
@@ -271,7 +276,7 @@ def collection_assign():
             "FROM `urge_order` "
             "WHERE  `outAddTime`>DATE_SUB(NOW(),INTERVAL 1 DAY) ")
         # [催收案件条数]
-        count = [row[0] for row in cursor_turku.fetchall()]
+        count = cursor_turku.fetchone()
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] == 0:
@@ -311,8 +316,8 @@ def account_balance():
             "SELECT  SUM(`primeCost`) "
             "FROM `credit_order` "
             "WHERE `orderTime` BETWEEN DATE_SUB(NOW(),INTERVAL 24 HOUR)  AND  DATE_SUB(NOW(), INTERVAL 22 HOUR); ")
-        # [催收案件条数]
-        count = [row[0] for row in cursor_turku.fetchall()]
+        # [昨天同期下2个小时放款量]
+        count = cursor_turku.fetchone()
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         # 获取账户余额
@@ -322,9 +327,9 @@ def account_balance():
         log.info("response_str:%s" % (response_str))
         response_map = json.loads(response_str)
         valid_amount = float(response_map.get('validAmount', '-1'))
-        if  valid_amount or valid_amount < count[0] * 1.5:
+        if valid_amount and valid_amount < count[0] * 1.5:
             lv = 1
-            raise (TaskException(item, lv, item.value.get('msg1')))
+            raise (TaskException(item, lv, item.value.get('msg1') % (valid_amount, count[0])))
         task_success = True
     except TaskException as te:
         msg = te.msg

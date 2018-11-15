@@ -107,7 +107,7 @@ def account_balance():
         account_task.account_balance()
 
 
-# 账户余额
+# 通过率检查
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.risk_pass_rate.value.get('mon_trigger')),
               replace_existing=True)
@@ -116,6 +116,17 @@ def risk_pass_rate():
     item = Item.objects.filter(mon_title=ItemEnum.risk_pass_rate.value.get('mon_title'))
     if item and item[0].mon_status == 1:
         risk_task.risk_pass_rate()
+
+
+# failReason异常检查
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.fail_reason.value.get('mon_trigger')),
+              replace_existing=True)
+def fail_reason():
+    my_db.close_old_connections()
+    item = Item.objects.filter(mon_title=ItemEnum.fail_reason.value.get('mon_title'))
+    if item and item[0].mon_status == 1:
+        risk_task.fail_reason()
 
 
 register_events(scheduler)
