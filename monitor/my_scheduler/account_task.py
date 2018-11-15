@@ -9,6 +9,7 @@ import logging, datetime, time
 import monitor.my_util.my_db as my_db
 import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
+from decimal import Decimal as D
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def today_register():
         if count[0] == 0:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1')))
-        if count[1] and count[2] and count[1] < count[2] * 0.3:
+        if count[1] and count[2] and count[1] < count[2] * D(0.3):
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg2') % (count[1], count[2])))
         task_success = True
@@ -146,12 +147,6 @@ def today_repay():
 
             "UNION "
 
-            "SELECT COUNT(`primeCost`)"
-            "FROM `credit_order`"
-            "WHERE  `paymentDate` BETWEEN DATE(DATE_SUB(NOW(),INTERVAL 1 DAY)) AND  DATE_SUB(NOW(), INTERVAL 1 DAY) AND `repaymentState`=1 "
-
-            "UNION "
-
             "SELECT "
             "( SELECT COUNT(`primeCost`) "
             "FROM `credit_order` "
@@ -168,8 +163,8 @@ def today_repay():
         if count[0] == 0:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1')))
-        today = float(count[0]) / count[1]
-        if today < count[2] * 0.3:
+        today = count[0] / count[1]
+        if today < count[2] * D(0.3):
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg2') % (today, count[2])))
         # 如果当前时间与23点时间差值在600s（10分钟）范围内
