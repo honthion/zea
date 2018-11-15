@@ -50,3 +50,11 @@ class ItemEnum(Enum):
                    "msg2": "回款率<昨天同比30%",
                    "msg3": "23:00时的回款率 < 60%",
                    "mon_desc": "如果回款量=0, level=1; 回款率<昨天同比30%，level=2；23:00时的回款率<60%, level=2;"}
+    repayment_sms = {"id": 5,
+                     "mon_type": 2,
+                     "mon_title": "还款短信和语音提醒",
+                     "mon_trigger": "30 9 * *  *",
+                     "mon_trigger_desc": "每天9:30检查一次",
+                     "msg1": "未发送【短信】提醒",
+                     "msg2": "未发送【语音】提醒",
+                     "mon_desc": "如果没有发送提醒短信或者没有发送语音提醒，level=2;"}

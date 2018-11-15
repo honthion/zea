@@ -183,3 +183,65 @@ def today_repay():
             db.close()
         record_save.save_record(item, lv, task_success, msg)
         return count
+
+
+# 还款短信和语音提醒
+def repayment_sms():
+    task_success = False
+    lv = 0
+    db_lasvegas = None
+    db_turku = None
+    count = []
+    item = ItemEnum.repayment_sms
+    msg = ''
+    try:
+        db_lasvegas = my_db.get_lasvegas_db()
+        db_turku = my_db.get_turku_db()
+        if not (db_lasvegas and db_turku):
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        # 短信发送
+        cursor_lasvegas = db_lasvegas.cursor()
+        cursor_lasvegas.execute(
+            "SELECT COUNT(0)  "
+            "FROM `sms_send_log`  "
+            "WHERE `deliver_status`=0 "
+            "AND  `deliver_time` >DATE_SUB(NOW(),INTERVAL 1 DAY) "
+            "AND `msg` REGEXP '^秒借呗.*您本期账单.*请知悉，谢谢！$' ")
+        # [短信发送条数]
+        count_sms = [row[0] for row in cursor_lasvegas.fetchall()]
+        # 语音发送
+        cursor_turku = db_turku.cursor()
+        cursor_turku.execute(
+            "SELECT  COUNT(0) "
+            "FROM `record_phone_no_operation` "
+            "WHERE `operation_type`=1 "
+            "AND `operation_status`=1 "
+            "AND `ctime`>DATE_SUB(NOW(),INTERVAL 1 DAY)")
+        # [短信发送条数]
+        count_voice = [row[0] for row in cursor_turku.fetchall()]
+
+        if not (count_sms and count_voice):
+            raise (TaskException(item, lv, my_db.msg_data_not_exist))
+        if count_sms[0] == 0 or count_voice[0] == 0:
+            lv = 2
+            msg = [item.value.get('msg1') if count_sms[0] == 0 else '',
+                   item.value.get('msg2') if count_voice[0] == 0 else '']
+            if '' in msg:
+                msg.remove('')
+            raise (TaskException(item, lv, ','.join(msg)))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error("repayment_sms alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+    except Exception as e:
+        msg = "repayment_sms fail."
+        log.error("repayment_sms fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+    finally:
+        if db_lasvegas:
+            db_lasvegas.close()
+        if db_turku:
+            db_turku.close()
+        record_save.save_record(item, lv, task_success, msg)
+        return count

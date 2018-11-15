@@ -23,6 +23,20 @@ def get_turku_db():
     return db
 
 
+# 获取lasvegas 数据连接
+def get_lasvegas_db():
+    db = None
+    try:
+        db = MySQLdb.connect(host=mc.rmb_mysql_host,  # your host, usually localhost
+                             port=mc.rmb_mysql_port,
+                             user=mc.rmb_mysql_username,  # your username
+                             passwd=mc.rmb_mysql_password,  # your password
+                             db=mc.rmb_mysql_dbname)  # name of the data base
+    except Exception as e:
+        log.error("get db error.msg:%s" % e.message)
+    return db
+
+
 # https://blog.csdn.net/little_stupid_child/article/details/81774194  OperationalError: (2006, 'MySQL server has gone away')
 def close_old_connections():
     for conn in connections.all():

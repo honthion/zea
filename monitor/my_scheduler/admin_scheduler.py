@@ -34,7 +34,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 
 # 账号登陆
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)
+# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)
 def account_login():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.base_task.value.get('mon_title'))
@@ -44,8 +44,7 @@ def account_login():
 
 # 当日注册
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')),
-              replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')), replace_existing=True)
 def today_register():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.today_register.value.get('mon_title'))
@@ -55,8 +54,7 @@ def today_register():
 
 # 当日贷款
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_loan_amount.value.get('mon_trigger')),
-              replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_loan_amount.value.get('mon_trigger')), replace_existing=True)
 def today_loan_amount():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.today_loan_amount.value.get('mon_title'))
@@ -67,11 +65,21 @@ def today_loan_amount():
 # 当日回款
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_repay.value.get('mon_trigger')), replace_existing=True)
-def today_loan_amount():
+def today_repay():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.today_repay.value.get('mon_title'))
     if item and item[0].mon_status == 1:
         account_task.today_repay()
+
+
+# 还款短信和语音提醒
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.repayment_sms.value.get('mon_trigger')), replace_existing=True)
+def repayment_sms():
+    my_db.close_old_connections()
+    item = Item.objects.filter(mon_title=ItemEnum.repayment_sms.value.get('mon_title'))
+    if item and item[0].mon_status == 1:
+        account_task.repayment_sms()
 
 
 register_events(scheduler)
