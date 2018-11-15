@@ -43,6 +43,7 @@ def today_register():
             ""
             "SELECT  COUNT(0) FROM `user`"
             "WHERE `registerTime` BETWEEN DATE(DATE_SUB(NOW(),INTERVAL 1 DAY))  AND  DATE_SUB(NOW(), INTERVAL 1 DAY);")
+        # [每小时注册量，昨日同期注册量]
         count = [row[0] for row in cursor.fetchall()]
         # 如果每小时注册量=0, level=1; 注册量<昨天同比30%，level=2
         if not count:
@@ -92,6 +93,7 @@ def today_loan_amount():
             "SELECT  SUM(`primeCost`)"
             "FROM `credit_order` "
             "WHERE `orderTime` BETWEEN DATE(DATE_SUB(NOW(),INTERVAL 1 DAY))  AND  DATE_SUB(NOW(), INTERVAL 1 DAY);")
+        # [今日放款量，昨日同期放款量]
         count = [row[0] for row in cursor.fetchall()]
         # 如果放款量=0, level=1; 放款量<昨天同比50%，level=2
         if not count:
@@ -153,9 +155,8 @@ def today_repay():
             "SELECT COUNT(`primeCost`)"
             "FROM `credit_order`"
             "WHERE  DATE(`latestPaymentDate`)= DATE(DATE_SUB(NOW(),INTERVAL 1 DAY)) ")
+        # [今日还款数，今日应还款数，昨日同期还款数，昨日应还款数]
         count = [row[0] for row in cursor.fetchall()]
-        # 今日还款数，今日应还款数，昨日同期还款数，昨日应还款数
-        count = [0, 3, 1, 3]
         # 如果回款量=0, level=1; 回款率 < 昨天同比30%，level=2；当天23:00时的回款率<60%, level=2;
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
@@ -166,7 +167,7 @@ def today_repay():
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg2')))
         # 如果当前时间与23点时间差值在600s（10分钟）范围内
-        is23clock = abs(time_util.gettime(23) - time.time()) < 500
+        is23clock = abs(time_util.gettime(23) - time.time()) < 600
         if is23clock and float(count[0]) / count[1] < 0.6:
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg3')))
