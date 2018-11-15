@@ -58,3 +58,10 @@ class ItemEnum(Enum):
                      "msg1": "未发送【短信】提醒",
                      "msg2": "未发送【语音】提醒",
                      "mon_desc": "如果没有发送提醒短信或者没有发送语音提醒，level=2;"}
+    collection_assign = {"id": 6,
+                         "mon_type": 2,
+                         "mon_title": "催收案件分配",
+                         "mon_trigger": "30 9 * *  *",
+                         "mon_trigger_desc": "每天9:30检查一次",
+                         "msg1": "没有催收案件分配",
+                         "mon_desc": "如果没有催收案件分配，level=2;"}

@@ -34,7 +34,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 
 # 账号登陆
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)
 def account_login():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.base_task.value.get('mon_title'))
@@ -80,6 +80,16 @@ def repayment_sms():
     item = Item.objects.filter(mon_title=ItemEnum.repayment_sms.value.get('mon_title'))
     if item and item[0].mon_status == 1:
         account_task.repayment_sms()
+
+
+# 催收案件分配
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.collection_assign.value.get('mon_trigger')), replace_existing=True)
+def collection_assign():
+    my_db.close_old_connections()
+    item = Item.objects.filter(mon_title=ItemEnum.collection_assign.value.get('mon_title'))
+    if item and item[0].mon_status == 1:
+        account_task.collection_assign()
 
 
 register_events(scheduler)
