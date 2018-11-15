@@ -12,11 +12,8 @@ from django.shortcuts import render, HttpResponse
 from django_redis import get_redis_connection
 from django.core.cache import cache
 import logging
-import json, eventlet
-from gevent import monkey
-import gevent
+import json
 
-monkey.patch_socket()
 log = logging.getLogger(__name__)
 
 wx_mjb_token_key = "sln:rauma:db:wx:token:%d"
