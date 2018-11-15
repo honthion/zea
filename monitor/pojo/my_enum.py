@@ -65,3 +65,10 @@ class ItemEnum(Enum):
                          "mon_trigger_desc": "每天9:30检查一次",
                          "msg1": "没有催收案件分配",
                          "mon_desc": "如果没有催收案件分配，level=2;"}
+    account_balance = {"id": 7,
+                       "mon_type": 2,
+                       "mon_title": "账户余额",
+                       "mon_trigger": "0 0/1 * * *",
+                       "mon_trigger_desc": "每1个小时检查一次",
+                       "msg1": "当前易宝账户余额<昨天同期下2个小时放款量的1.5倍",
+                       "mon_desc": "如果当前易宝账户余额<昨天同期下2个小时放款量的1.5倍，则level 1;"}

@@ -191,7 +191,8 @@ def repayment_sms():
     lv = 0
     db_lasvegas = None
     db_turku = None
-    count = []
+    count_sms = []
+    count_voice = []
     item = ItemEnum.repayment_sms
     msg = ''
     try:
@@ -234,13 +235,104 @@ def repayment_sms():
         task_success = True
     except TaskException as te:
         msg = te.msg
-        log.error("repayment_sms alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+        log.error("repayment_sms  alarm.count_sms:%s,count_voice:%s,lv:%d,msg:%s" % (
+            json.dumps(count_sms), json.dumps(count_voice), te.level, te.msg))
     except Exception as e:
         msg = "repayment_sms fail."
-        log.error("repayment_sms fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+        log.error("repayment_sms fail.count_sms:%s,count_voice:%s,msg:%s" % (
+            json.dumps(count_sms), json.dumps(count_voice), e.message))
     finally:
         if db_lasvegas:
             db_lasvegas.close()
+        if db_turku:
+            db_turku.close()
+        record_save.save_record(item, lv, task_success, msg)
+    return count_sms.extend(count_voice)
+
+
+# 催收案件分配
+def collection_assign():
+    task_success = False
+    lv = 0
+    db_turku = None
+    count = []
+    item = ItemEnum.collection_assign
+    msg = ''
+    try:
+        db_turku = my_db.get_turku_db()
+        if not db_turku:
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        # 催收案件分配
+        cursor_turku = db_turku.cursor()
+        cursor_turku.execute(
+            "SELECT  COUNT(0) "
+            "FROM `urge_order` "
+            "WHERE  `outAddTime`>DATE_SUB(NOW(),INTERVAL 1 DAY) ")
+        # [催收案件条数]
+        count = [row[0] for row in cursor_turku.fetchall()]
+        if not count:
+            raise (TaskException(item, lv, my_db.msg_data_not_exist))
+        if count[0] == 0:
+            lv = 2
+            raise (TaskException(item, lv, item.value.get('msg1')))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error("collection_assign alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+    except Exception as e:
+        msg = "collection_assign fail."
+        log.error("collection_assign fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+    finally:
+        if db_turku:
+            db_turku.close()
+        record_save.save_record(item, lv, task_success, msg)
+        return count
+
+
+# 账户余额
+def account_balance():
+    task_success = False
+    lv = 0
+    db_turku = None
+    count = []
+    item = ItemEnum.account_balance
+    msg = ''
+    try:
+        db_turku = my_db.get_turku_db()
+        if not db_turku:
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        cursor_turku = db_turku.cursor()
+        # 昨天同期下2个小时放款量的1.5倍
+        cursor_turku.execute(
+            "SELECT  SUM(`primeCost`) "
+            "FROM `credit_order` "
+            "WHERE `orderTime` BETWEEN DATE_SUB(NOW(),INTERVAL 24 HOUR)  AND  DATE_SUB(NOW(), INTERVAL 22 HOUR); ")
+        # [催收案件条数]
+        count = [row[0] for row in cursor_turku.fetchall()]
+        if not count:
+            raise (TaskException(item, lv, my_db.msg_data_not_exist))
+        # 获取账户余额
+        request_url = my_conf.yibao_account_balance
+        log.info("request_url:%s" % (request_url))
+        response_str = requests.get(request_url).text
+        log.info("response_str:%s" % (response_str))
+        response_map = json.loads(response_str)
+        valid_amount = float(response_map.get('validAmount', '-1'))
+        if  valid_amount or valid_amount < count[0] * 1.5:
+            lv = 1
+            raise (TaskException(item, lv, item.value.get('msg1')))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error("account_balance alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+    except Exception as e:
+        msg = "account_balance fail."
+        log.error("account_balance fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+    finally:
         if db_turku:
             db_turku.close()
         record_save.save_record(item, lv, task_success, msg)

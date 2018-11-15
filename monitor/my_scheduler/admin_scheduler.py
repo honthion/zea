@@ -92,5 +92,15 @@ def collection_assign():
         account_task.collection_assign()
 
 
+# 账户余额
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.account_balance.value.get('mon_trigger')), replace_existing=True)
+def account_balance():
+    my_db.close_old_connections()
+    item = Item.objects.filter(mon_title=ItemEnum.account_balance.value.get('mon_title'))
+    if item and item[0].mon_status == 1:
+        account_task.account_balance()
+
+
 register_events(scheduler)
 scheduler.start()
