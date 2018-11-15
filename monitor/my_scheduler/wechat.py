@@ -12,8 +12,11 @@ from django.shortcuts import render, HttpResponse
 from django_redis import get_redis_connection
 from django.core.cache import cache
 import logging
-import json
+import json, eventlet
+from gevent import monkey
+import gevent
 
+monkey.patch_socket()
 log = logging.getLogger(__name__)
 
 wx_mjb_token_key = "sln:rauma:db:wx:token:%d"
@@ -85,6 +88,12 @@ def get_tag_list(lv):
     if tag_list:
         log.info("get tag list success,tag_list:%s" % (tag_list))
         return json.loads(tag_list)
+    return get_tag_list_async(lv)
+
+
+# 获取微信标签-
+def get_tag_list_async(lv):
+    conn = get_redis_connection("default")
     retry = 0
     try:
         while retry < 3:

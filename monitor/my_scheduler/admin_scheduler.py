@@ -65,8 +65,8 @@ def today_loan_amount():
 
 
 # 当日回款
-@register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_repay.value.get('mon_trigger')), replace_existing=True)
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_repay.value.get('mon_trigger')), replace_existing=True)
 def today_repay():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.today_repay.value.get('mon_title'))

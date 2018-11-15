@@ -87,7 +87,7 @@ def today_loan_amount():
         cursor.execute(
             "SELECT  SUM(`primeCost`) "
             "FROM `credit_order` "
-            "WHERE `orderTime` > DATE(NOW())"
+            "WHERE `orderTime` > CURDATE()"
             ""
             "UNION "
             ""
@@ -137,13 +137,13 @@ def today_repay():
         cursor.execute(
             "SELECT COUNT(`primeCost`) "
             "FROM `credit_order`"
-            "WHERE DATE(`paymentDate`)=DATE(NOW()) AND `repaymentState`=1 "
+            "WHERE DATE(`paymentDate`)=CURDATE() AND `repaymentState`=1 "
 
             "UNION "
 
             "SELECT COUNT(`primeCost`)"
             "FROM `credit_order`"
-            "WHERE  DATE(`latestPaymentDate`)=DATE(NOW()) "
+            "WHERE  DATE(`latestPaymentDate`)=CURDATE() "
 
             "UNION "
 
@@ -193,7 +193,7 @@ def repayment_sms():
     db_lasvegas = None
     db_turku = None
     count_sms = []
-    count_voice = []
+    count_turku = []
     item = ItemEnum.repayment_sms
     msg = ''
     try:
@@ -209,26 +209,37 @@ def repayment_sms():
             "SELECT COUNT(0)  "
             "FROM `sms_send_log`  "
             "WHERE `deliver_status`=0 "
-            "AND  `deliver_time` >DATE_SUB(NOW(),INTERVAL 1 DAY) "
+            "AND  `deliver_time` = CURDATE() "
             "AND `msg` REGEXP '^秒借呗.*您本期账单.*请知悉，谢谢！$' ")
         # [短信发送条数]
         count_sms = cursor_lasvegas.fetchone()
         # 语音发送
         cursor_turku = db_turku.cursor()
         cursor_turku.execute(
+
             "SELECT  COUNT(0) "
             "FROM `record_phone_no_operation` "
             "WHERE `operation_type`=1 "
             "AND `operation_status`=1 "
-            "AND `ctime`>DATE_SUB(NOW(),INTERVAL 1 DAY)")
-        # [短信发送条数]
-        count_voice = cursor_turku.fetchone()
-        if not (count_sms and count_voice):
+            "AND `ctime`>DATE_SUB(NOW(),INTERVAL 1 DAY) "
+
+            "UNION "
+
+            "SELECT COUNT(0) "
+            "FROM credit_order "
+            "WHERE loanState=3 AND repaymentState=0 AND (DATE(latestPaymentDate-1)=CURDATE() OR DATE(latestPaymentDate)=CURDATE() )")
+
+        # [语音发送条数，总短信发送条数]
+        count_turku =[row[0] for row in cursor_turku.fetchall()]
+        if not (count_sms and count_turku):
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
-        if count_sms[0] == 0 or count_voice[0] == 0:
+        count_turku = [0, 100]
+        # 判断短信发送的成功率
+        sms_success = count_sms[0] / count_turku[1]
+        if sms_success < 0.8 or count_turku[0] == 0:
             lv = 2
-            msg = [item.value.get('msg1') if count_sms[0] == 0 else '',
-                   item.value.get('msg2') if count_voice[0] == 0 else '']
+            msg = [item.value.get('msg1') % (count_turku[1], count_sms[0],  float(sms_success)) if sms_success < 0.8 else '',
+                   item.value.get('msg2') if count_turku[0] == 0 else '']
             if '' in msg:
                 msg.remove('')
             raise (TaskException(item, lv, ','.join(msg)))
@@ -236,18 +247,18 @@ def repayment_sms():
     except TaskException as te:
         msg = te.msg
         log.error("repayment_sms  alarm.count_sms:%s,count_voice:%s,lv:%d,msg:%s" % (
-            json.dumps(count_sms), json.dumps(count_voice), te.level, te.msg))
+            json.dumps(count_sms), json.dumps(count_turku), te.level, te.msg))
     except Exception as e:
         msg = "repayment_sms fail."
         log.error("repayment_sms fail.count_sms:%s,count_voice:%s,msg:%s" % (
-            json.dumps(count_sms), json.dumps(count_voice), e.message))
+            json.dumps(count_sms), json.dumps(count_turku), e.message))
     finally:
         if db_lasvegas:
             db_lasvegas.close()
         if db_turku:
             db_turku.close()
         record_save.save_record(item, lv, task_success, msg)
-    return count_sms.extend(count_voice)
+    return count_sms.extend(count_turku)
 
 
 # 催收案件分配
