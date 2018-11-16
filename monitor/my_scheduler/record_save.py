@@ -5,7 +5,7 @@ from django.core.exceptions import *
 import logging
 from monitor.my_scheduler import email_send, wechat
 import monitor.my_util.my_conf as my_conf
-
+import json
 from django.db import connection
 
 log = logging.getLogger(__name__)
@@ -24,17 +24,17 @@ def save_record(item_enum, lv, task_success, err_info):
         log.info("save_record but DoesNotExist.mon_id:%d" % (mon_id))
     try:
         if record == None or record.mon_status == MonitorStatusEnum.normal or record.mon_status == MonitorStatusEnum.recovery:  # 如果前一条是成功的
-            Record.objects.create(mon_id=mon_id, mon_title=mon_title,
-                                  mon_status=MonitorStatusEnum.normal if task_success else MonitorStatusEnum.alarm,
-                                  mon_level=lv,
-                                  err_info=err_info,
-                                  mon_type=mon_type
-                                  )
-
+            record = Record.objects.create(mon_id=mon_id, mon_title=mon_title,
+                                           mon_status=MonitorStatusEnum.normal if task_success else MonitorStatusEnum.alarm,
+                                           mon_level=lv,
+                                           err_info=err_info,
+                                           mon_type=mon_type
+                                           )
         else:  # 前一条是失败的
             record.mon_status = MonitorStatusEnum.recovery if task_success else MonitorStatusEnum.alarm
             record.save()
-        log.info("save_record success")
+        log.info("save_record success:%s" % mon_title)
+
         if record != None and record.mon_status == MonitorStatusEnum.alarm:
             # 如果此条是失败的，将执行消息推送
             send_message(item_enum, lv, task_success, err_info)

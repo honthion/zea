@@ -85,6 +85,12 @@ def get_tag_list(lv):
     if tag_list:
         log.info("get tag list success,tag_list:%s" % (tag_list))
         return json.loads(tag_list)
+    return get_tag_list_async(lv)
+
+
+# 获取微信标签-
+def get_tag_list_async(lv):
+    conn = get_redis_connection("default")
     retry = 0
     try:
         while retry < 3:

@@ -191,7 +191,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': "[%(asctime)s] %(levelname)-8s [%(name)s:%(funcName)s:%(lineno)-3s] %(message)s",
+            'format': "[%(asctime)s] %(levelname)-8s [%(name)s:%(funcName)s:%(lineno)-3s:%(thread)d] %(message)s",
             # 'datefmt': "%Y-%m-%d %H:%M:%S.%s"
         },
     },
