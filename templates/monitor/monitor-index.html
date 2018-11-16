@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <base href="{{ 0| get_base_url }}"/>
+    <base href="{{ 0| get_base_url }}"/>
     <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
@@ -54,7 +54,8 @@
                     <td>{{ item.mon_type|get_mon_type_name }}</td>
                     <td>{{ item.ctime|date:"Y-m-d H:i:s" }}</td>
                     {% if item.mon_status == 2 %}
-                        <td class="td-status"><span class="radius btn btn-danger">告警中</span>
+                        <td class="td-status"><span class="radius btn btn-danger"
+                                                    onclick="monitor_record_status(this,{{ item.id }})">告警中</span>
                         </td>
                     {% elif item.mon_status == 3 %}
                         <td class="td-status"><span class="radius btn btn-default">恢复</span>
@@ -127,6 +128,29 @@
             content: content,
         });
         layer.full(index);
+    }
+
+
+    /*更改状态*/
+    function monitor_record_status(obj, id) {
+        layer.confirm('确认将状态恢复为正常？', function (index) {
+            $.ajax({
+                type: 'put',
+                dataType: 'json',
+                contentType: "application/json",
+                url: base_url + 'monitor/records/' + id + "/",
+                data: JSON.stringify(({
+                    "mon_status": 1
+                })),
+                success: function (data) {
+                    layer.msg('已恢复!', {icon: 1, time: 1000});
+                    location.href = location.href
+                },
+                error: function (data) {
+                    console.log(data.msg);
+                },
+            });
+        });
     }
 
 

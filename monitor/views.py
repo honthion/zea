@@ -28,7 +28,6 @@ log = logging.getLogger(__name__)
 # 首页
 @login_required(login_url='/login')
 def index(request):
-
     return render(request, 'index.html')
 
 
@@ -235,7 +234,12 @@ def recordSingle(request, record_id='0'):
                 record = Record.objects.get(id=record_id)
                 requestBody = json.loads(request.body)
                 record.operator = request.user.username
-                record.remark = requestBody.get('remark')
+                remark = requestBody.get('remark')
+                mon_status = requestBody.get('mon_status')
+                if remark is not None:
+                    record.remark = remark
+                if mon_status == 1:
+                    record.mon_status = mon_status
                 record.save()
         elif 'GET' == requestMethod:
             # 需要获取 分组信息

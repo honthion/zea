@@ -10,8 +10,7 @@
     <meta name="viewport"
           content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
     <meta http-equiv="Cache-Control" content="no-siteapp"/>
-    <link rel="Bookmark" href="/favicon.ico">
-    <link rel="Shortcut Icon" href="/favicon.ico"/>
+    <link rel="Shortcut Icon" href="{{ 'static/monitor/images/favicon.ico'|get_base_url }}"/>
     <!--[if lt IE 9]>
 <script type="text/javascript" src="static/lib/html5shiv.js"></script>
 <script type="text/javascript" src="static/lib/respond.min.js"></script>
@@ -31,8 +30,8 @@
 <body>
 <header class="navbar-wrapper">
     <div class="navbar navbar-fixed-top">
-        <div class="container-fluid cl"><a class="logo navbar-logo f-l mr-10 hidden-xs" href="#">IBEE</a> <a
-                class="logo navbar-logo-m f-l mr-10 visible-xs" href="#">IBEE</a>
+        <div class="container-fluid cl"><a class="logo navbar-logo f-l mr-10 hidden-xs" href="#">MJB</a> <a
+                class="logo navbar-logo-m f-l mr-10 visible-xs" href="#">MJB</a>
             <a aria-hidden="false" class="nav-toggle Hui-iconfont visible-xs" href="javascript:;">&#xe667;</a>
             <input hidden id="base_url_id" value="{{ base_url }}">
             </nav>
@@ -42,7 +41,6 @@
                     <li class="dropDown dropDown_hover">
                         <a href="#" class="dropDown_A">admin <i class="Hui-iconfont">&#xe6d5;</i></a>
                         <ul class="dropDown-menu menu radius box-shadow">
-                            <li><a href="javascript:;" onClick="myselfinfo()">个人信息</a></li>
                             <li><a href="#">切换账户</a></li>
                             <li><a href="login_out" onClick="">退出</a></li>
                         </ul>
