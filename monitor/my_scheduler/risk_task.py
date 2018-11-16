@@ -89,7 +89,7 @@ def risk_pass_rate():
             raise (TaskException(item, lv, item.value.get('msg1') % (count[1], count[2])))
         if count[1] < 0.05 or count[2] < 0.1:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg2') % (count[1], count[2])))
+            raise (TaskException(item, lv, item.value.get('msg1') % (count[1], count[2])))
         task_success = True
     except TaskException as te:
         msg = te.msg
