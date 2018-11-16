@@ -43,9 +43,9 @@ def account_login():
 
 
 # 当日注册
-@register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')),
-#               replace_existing=True)
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')),
+              replace_existing=True)
 def today_register():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.today_register.value.get('mon_title'))
@@ -119,9 +119,9 @@ def risk_pass_rate():
 
 
 # failReason异常检查
-@register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
-# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.fail_reason.value.get('mon_trigger')),
-#               replace_existing=True)
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.fail_reason.value.get('mon_trigger')),
+              replace_existing=True)
 def fail_reason():
     my_db.close_old_connections()
     item = Item.objects.filter(mon_title=ItemEnum.fail_reason.value.get('mon_title'))
