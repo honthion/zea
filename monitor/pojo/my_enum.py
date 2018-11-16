@@ -77,7 +77,7 @@ class ItemEnum(Enum):
                       "mon_title": "通过率检查",
                       "mon_trigger": "0/30 9-23 * * *",
                       "mon_trigger_desc": "每天从9:00开始每0.5小时查询一次",
-                      "msg1": "注册放款率=%.2f;审核通过率=%.2f",
+                      "msg1": "注册放款率=%.3f;审核通过率=%.3f",
                       "mon_desc": "当日的注册数>50的情况下，注册放款率或者审核通过率=0，level=1；注册放款率<5%*[再说]或者审核通过率<10%, level=2;"}
     fail_reason = {"id": 9,
                    "mon_type": 3,

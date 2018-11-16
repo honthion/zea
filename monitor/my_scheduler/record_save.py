@@ -66,7 +66,7 @@ def send_message(item_enum, lv, task_success, msg):
     # 发送微信
     if wx_tag_id:
         wechat.send_message(split_to_set(wx_tag_id), lv,
-                            "MJB-监控预警</br>分类：%s</br>名称：%s</br>描述：%s" % (mon_type_name, mon_title, msg))
+                            "MJB-监控预警<br/>分类：%s<br/>名称：%s<br/>描述：%s" % (mon_type_name, mon_title, msg))
 
 
 def split_comma_to_set(str):
