@@ -38,7 +38,7 @@ class ItemEnum(Enum):
                          "mon_title": "当日放款金额",
                          "mon_trigger": "0/30 10-23 * * *",
                          "mon_trigger_desc": "每天从10:00-00:00，每0.5小时查询一次",
-                         "msg1": "前一小时放款量=0",
+                         "msg1": "放款量=0",
                          "msg2": "放款量%.2f < 昨天同比%.2f的50%%",
                          "mon_desc": "如果放款量=0, level=1; 放款量<昨天同比50%，level=2"}
     today_repay = {"id": 4,
@@ -46,9 +46,9 @@ class ItemEnum(Enum):
                    "mon_title": "当日回款",
                    "mon_trigger": "56 12-23/1 * *  *",
                    "mon_trigger_desc": "每天从12:00-00:00，每个小时查询一次",
-                   "msg1": "前一小时回款量=0",
+                   "msg1": "回款量=0",
                    "msg2": "回款率%.2f < 昨天同比%.2f的30%%",
-                   "msg3": "23:00时的回款率【%.2f】 < 60%",
+                   "msg3": "23:00时的回款率%.2f < 60%",
                    "mon_desc": "如果回款量=0, level=1; 回款率<昨天同比30%，level=2;23:00时的回款率<60%, level=2;"}
     repayment_sms = {"id": 5,
                      "mon_type": 2,
@@ -78,7 +78,6 @@ class ItemEnum(Enum):
                       "mon_trigger": "0/30 9-23 * * *",
                       "mon_trigger_desc": "每天从9:00开始每0.5小时查询一次",
                       "msg1": "注册放款率=%.2f;审核通过率=%.2f",
-                      "msg2": "注册放款率=%.2f;审核通过率=%.2f",
                       "mon_desc": "当日的注册数>50的情况下，注册放款率或者审核通过率=0，level=1；注册放款率<5%*[再说]或者审核通过率<10%, level=2;"}
     fail_reason = {"id": 9,
                    "mon_type": 3,

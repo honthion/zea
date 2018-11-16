@@ -65,7 +65,7 @@
       "mon_type": 2,
       "mon_trigger": "0 30 9 * * ? *",
       "mon_trigger_desc": "每天9:30检查",
-      "mon_desc": "如果没有发送提醒短信或者没有发送语音提醒，level=2",
+      "mon_desc": "如果短信发送成功率<0.8,语音提醒未发送，level=2",
       "mon_status": 1
     }
   },
