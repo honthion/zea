@@ -9,6 +9,7 @@ import logging, datetime, time
 import monitor.my_util.my_db as my_db
 import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
+from monitor.my_util.serializers import *
 
 log = logging.getLogger(__name__)
 
@@ -121,6 +122,7 @@ def fail_reason():
         cursor.execute(fail_reason_sql)
         # [命中名称，今日占比，过去三天占比，变化率]
         count = cursor.fetchall()
+        log.info("fail_reason .count:%s" % json.dumps(count, default=defaultencode))
         # 每个failreason的数量>10的情况下，该failreaon占比比前3天同期的变化率>50%，level=2
         if count:
             lv = 2
@@ -129,10 +131,11 @@ def fail_reason():
         task_success = True
     except TaskException as te:
         msg = te.msg
-        log.error("fail_reason alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+        log.error(
+            "fail_reason alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
     except Exception as e:
         msg = "fail_reason fail."
-        log.error("fail_reason fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+        log.error("fail_reason fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
     finally:
         if db:
             db.close()

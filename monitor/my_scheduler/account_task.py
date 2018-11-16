@@ -10,6 +10,7 @@ import monitor.my_util.my_db as my_db
 import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
 from decimal import Decimal as D
+from monitor.my_util.serializers import *
 
 log = logging.getLogger(__name__)
 
@@ -58,10 +59,10 @@ def today_register():
         task_success = True
     except TaskException as te:
         msg = te.msg
-        log.error("today_register alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+        log.error("today_register alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
     except Exception as e:
         msg = "today_register fail."
-        log.error("today_register fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+        log.error("today_register fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
     finally:
         if db:
             db.close()
@@ -175,10 +176,10 @@ def today_repay():
         task_success = True
     except TaskException as te:
         msg = te.msg
-        log.error("today_repay alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+        log.error("today_repay alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
     except Exception as e:
         msg = "today_repay fail."
-        log.error("today_repay fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+        log.error("today_repay fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
     finally:
         if db:
             db.close()
