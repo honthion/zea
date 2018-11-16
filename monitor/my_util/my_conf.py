@@ -3,7 +3,6 @@ from rauma import settings
 
 cf = configparser.ConfigParser()
 conf_path = settings.CONF_DIR
-print conf_path
 cf.read(conf_path, encoding='UTF-8')
 
 base_url = cf.get("global", "base_url").encode('unicode-escape').decode('string_escape')

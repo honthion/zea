@@ -15,7 +15,51 @@ log = logging.getLogger(__name__)
 # 通过率检查 来源于  queryUserTransferReportDetail
 pass_rate_sql = "SELECT registerCount , IFNULL(CAST(orderCount / registerCount AS DECIMAL(8, 4)), 0) AS registerOrderRate,  IFNULL(CAST(applySuccessCount / applyCount AS DECIMAL(8, 4)), 0) AS applySuccessRate FROM ( SELECT DATE, SUM(clickCount) AS clickCount, SUM(applyCount) AS applyCount , SUM(registerCount) AS registerCount, SUM(applySuccessCount) AS applySuccessCount , SUM(orderCount) AS orderCount, SUM(orderMoney) AS orderMoney , IFNULL(CAST(applyCount / registerCount AS DECIMAL(8, 4)), 0) AS registerApplyRate , IFNULL(CAST(applySuccessCount / applyCount AS DECIMAL(8, 4)), 0) AS applySuccessRate , IFNULL(CAST(orderCount / registerCount AS DECIMAL(8, 4)), 0) AS registerOrderRate FROM ( SELECT IFNULL(SUM(clickCount), 0) AS clickCount, 0 AS registerCount , 0 AS applyCount, 0 AS applySuccessCount, 0 AS orderCount, 0 AS orderMoney , DATE(countDate) AS DATE FROM daoliu_platform_click WHERE 1 = 1 GROUP BY DATE(countDate) UNION ALL SELECT 0 AS clickCount, IFNULL(COUNT(1), 0) AS registerCount , 0 AS applyCount, 0 AS applySuccessCount, 0 AS orderCount, 0 AS orderMoney , DATE(registerTime) AS DATE FROM `user` WHERE 1 = 1 GROUP BY DATE(registerTime) UNION ALL SELECT 0 AS clickCount, 0 AS registerCount , IFNULL(COUNT(1), 0) AS applyCount , 0 AS applySuccessCount, 0 AS orderCount, 0 AS orderMoney, DATE(t2.registerTime) AS DATE FROM identificate_order t1 INNER JOIN `user` t2 ON t1.userId = t2.id WHERE 1 = 1 GROUP BY DATE(t2.registerTime) UNION ALL SELECT 0 AS clickCount, 0 AS registerCount, 0 AS applyCount , IFNULL(COUNT(1), 0) AS applySuccessCount , 0 AS orderCount, 0 AS orderMoney, DATE(t2.registerTime) AS DATE FROM identificate_order t1 INNER JOIN `user` t2 ON t1.userId = t2.id WHERE t1.state = 7 GROUP BY DATE(t2.registerTime) UNION ALL SELECT 0 AS clickCount, 0 AS registerCount, 0 AS applyCount, 0 AS applySuccessCount , IFNULL(COUNT(DISTINCT userId), 0) AS orderCount , IFNULL(SUM(t1.primeCost), 0) AS orderMoney , DATE(t2.registerTime) AS DATE FROM credit_order t1 INNER JOIN `user` t2 ON t1.userId = t2.id WHERE t1.loanState = 3 GROUP BY DATE(t2.registerTime) ) b WHERE 1 = 1 GROUP BY b.date ) c ORDER BY c.date DESC LIMIT 10;  SELECT registerCount, IFNULL(CAST(applyCount / registerCount AS DECIMAL(8, 4)), 0) AS registerApplyRate , IFNULL(CAST(applySuccessCount / applyCount AS DECIMAL(8, 4)), 0) AS applySuccessRate , IFNULL(CAST(orderCount / registerCount AS DECIMAL(8, 4)), 0) AS registerOrderRate FROM ( SELECT DATE, SUM(clickCount) AS clickCount, SUM(applyCount) AS applyCount , SUM(registerCount) AS registerCount, SUM(applySuccessCount) AS applySuccessCount , SUM(orderCount) AS orderCount, SUM(orderMoney) AS orderMoney , IFNULL(CAST(applyCount / registerCount AS DECIMAL(8, 4)), 0) AS registerApplyRate , IFNULL(CAST(applySuccessCount / applyCount AS DECIMAL(8, 4)), 0) AS applySuccessRate , IFNULL(CAST(orderCount / registerCount AS DECIMAL(8, 4)), 0) AS registerOrderRate FROM ( SELECT IFNULL(SUM(clickCount), 0) AS clickCount, 0 AS registerCount , 0 AS applyCount, 0 AS applySuccessCount, 0 AS orderCount, 0 AS orderMoney , DATE(countDate) AS DATE FROM daoliu_platform_click WHERE 1 = 1 GROUP BY DATE(countDate) UNION ALL SELECT 0 AS clickCount, IFNULL(COUNT(1), 0) AS registerCount , 0 AS applyCount, 0 AS applySuccessCount, 0 AS orderCount, 0 AS orderMoney , DATE(registerTime) AS DATE FROM `user` WHERE 1 = 1 GROUP BY DATE(registerTime) UNION ALL SELECT 0 AS clickCount, 0 AS registerCount , IFNULL(COUNT(1), 0) AS applyCount , 0 AS applySuccessCount, 0 AS orderCount, 0 AS orderMoney, DATE(t2.registerTime) AS DATE FROM identificate_order t1 INNER JOIN `user` t2 ON t1.userId = t2.id WHERE 1 = 1 GROUP BY DATE(t2.registerTime) UNION ALL SELECT 0 AS clickCount, 0 AS registerCount, 0 AS applyCount , IFNULL(COUNT(1), 0) AS applySuccessCount , 0 AS orderCount, 0 AS orderMoney, DATE(t2.registerTime) AS DATE FROM identificate_order t1 INNER JOIN `user` t2 ON t1.userId = t2.id WHERE t1.state = 7 GROUP BY DATE(t2.registerTime) UNION ALL SELECT 0 AS clickCount, 0 AS registerCount, 0 AS applyCount, 0 AS applySuccessCount , IFNULL(COUNT(DISTINCT userId), 0) AS orderCount , IFNULL(SUM(t1.primeCost), 0) AS orderMoney , DATE(t2.registerTime) AS DATE FROM credit_order t1 INNER JOIN `user` t2 ON t1.userId = t2.id WHERE t1.loanState = 3 GROUP BY DATE(t2.registerTime) ) b WHERE 1 = 1 GROUP BY b.date ) c ORDER BY c.date DESC LIMIT 1;"
 # 失败原因检查
-fail_reason_sql = "SELECT s3.failReason, s3.rate, c3.rate, s3.rate / c3.rate FROM ( SELECT s1.failReason, s1.failCount, s1.failCount / s2.total AS rate FROM ( SELECT t1.failReason, COUNT(*) AS failCount FROM identificate_order t1 WHERE t1.failReason != '' AND DATE(t1.failTime) >= DATE(NOW()) GROUP BY t1.failReason ) s1, ( SELECT COUNT(0) AS total FROM identificate_order t1 WHERE t1.failReason != '' AND DATE(t1.failTime) >= DATE(NOW()) ) s2 ) s3 LEFT JOIN ( SELECT c1.failReason, c1.failCount, c1.failCount / c2.total AS rate FROM ( SELECT t1.failReason, COUNT(*) AS failCount FROM identificate_order t1 WHERE t1.failReason != '' AND (DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND DATE_SUB(NOW(), INTERVAL 1 DAY) OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 2 DAY)) AND DATE_SUB(NOW(), INTERVAL 2 DAY) OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 3 DAY)) AND DATE_SUB(NOW(), INTERVAL 3 DAY)) GROUP BY t1.failReason ) c1, ( SELECT COUNT(0) AS total FROM identificate_order t1 WHERE t1.failReason != '' AND (DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND DATE_SUB(NOW(), INTERVAL 1 DAY) OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 2 DAY)) AND DATE_SUB(NOW(), INTERVAL 2 DAY) OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 3 DAY)) AND DATE_SUB(NOW(), INTERVAL 3 DAY)) ) c2 ) c3 ON c3.failReason = s3.failReason WHERE s3.failCount > 10 AND s3.rate / c3.rate NOT BETWEEN 0.5 AND 1.5"
+fail_reason_sql = '''
+                    
+                    SELECT s3.failReason,  -- 失败项名称
+                           s3.rate, -- 今日占比
+                           c3.rate, -- 前三日占比
+                           s3.rate / c3.rate -- 变化比率
+                    FROM
+                      (SELECT s1.failReason,
+                              s1.failCount,
+                              s1.failCount / s2.total AS rate
+                       FROM
+                         (SELECT t1.failReason,
+                                 COUNT(*) AS failCount
+                          FROM identificate_order t1
+                          WHERE t1.failReason != ''
+                            AND DATE(t1.failTime) >= CURDATE()
+                          GROUP BY t1.failReason) s1,
+                    
+                         (SELECT COUNT(0) AS total
+                          FROM identificate_order t1
+                          WHERE t1.failReason != ''
+                            AND DATE(t1.failTime) >= CURDATE() ) s2) s3
+                    LEFT JOIN
+                      (SELECT c1.failReason,
+                              c1.failCount,
+                              c1.failCount / c2.total AS rate
+                       FROM
+                         (SELECT t1.failReason,
+                                 COUNT(*) AS failCount
+                          FROM identificate_order t1
+                          WHERE t1.failReason != ''
+                            AND (DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND DATE_SUB(NOW(), INTERVAL 1 DAY)
+                                 OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 2 DAY)) AND DATE_SUB(NOW(), INTERVAL 2 DAY)
+                                 OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 3 DAY)) AND DATE_SUB(NOW(), INTERVAL 3 DAY))
+                          GROUP BY t1.failReason) c1,
+                    
+                         (SELECT COUNT(0) AS total
+                          FROM identificate_order t1
+                          WHERE t1.failReason != ''
+                            AND (DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND DATE_SUB(NOW(), INTERVAL 1 DAY)
+                                 OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 2 DAY)) AND DATE_SUB(NOW(), INTERVAL 2 DAY)
+                                 OR DATE(t1.failTime) BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 3 DAY)) AND DATE_SUB(NOW(), INTERVAL 3 DAY)) ) c2) c3 ON c3.failReason = s3.failReason
+                    WHERE s3.failCount > 10
+                      AND s3.rate / c3.rate NOT BETWEEN 0.5 AND 1.5
+                '''
 
 
 # 通过率检查
@@ -81,7 +125,7 @@ def fail_reason():
         if count:
             lv = 2
             data = [item.value.get('msg1') % (c[0], c[3]) for c in count]
-            raise (TaskException(item, lv,   ",".join(data)))
+            raise (TaskException(item, lv, ",".join(data)))
         task_success = True
     except TaskException as te:
         msg = te.msg
