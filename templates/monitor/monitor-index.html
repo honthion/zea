@@ -67,7 +67,7 @@
                     <td>{{ item.utime|date:"Y-m-d H:i:s" }}</td>
                     <td>{{ item.remark }}</td>
                     <td class="f-14 td-manage"></a> <a style="text-decoration:none" class="ml-5"
-                                                       onClick="record_remark_edit('编辑', {{ item.id }},400,150)"
+                                                       onClick="record_remark_edit({{ item.id }},'{{ item.remark }}')"
                                                        href="javascript:;" title="编辑"><i
                             class="Hui-iconfont">&#xe6df;</i></a></td>
                 </tr>
@@ -117,19 +117,19 @@
         ]
     });
 
-    /*编辑*/
-    function record_remark_edit(title, id, w, h) {
-        console.log(base_url);
-        content = base_url + 'monitor/records/' + id + '/';
-        console.log(content)
-        var index = layer.open({
-            type: 2,
-            title: title,
-            content: content,
-        });
-        layer.full(index);
-    }
-
+    {% comment %}  /*编辑*/
+      function record_remark_edit(title, id, w, h) {
+          console.log(base_url);
+          content = base_url + 'monitor/records/' + id + '/';
+          console.log(content)
+          var index = layer.open({
+              type: 2,
+              title: title,
+              content: content,
+          });
+          layer.full(index);
+      }
+  {% endcomment %}
 
     /*更改状态*/
     function monitor_record_status(obj, id) {
@@ -150,6 +150,33 @@
                     console.log(data.msg);
                 },
             });
+        });
+    }
+
+    /*修改备注信息*/
+    function record_remark_edit(id, remark) {
+        layer.prompt({title: '备注', value: remark, formType: 2}, function (text, index) {
+            layer.confirm('确认修改？', function (index) {
+                $.ajax({
+                    type: 'PUT',
+                    dataType: 'json',
+                    contentType: "application/json",
+                    url: base_url + 'monitor/records/' + id + "/",
+                    data: JSON.stringify(({
+                        "remark": text
+                    })),
+                    success: function (data) {
+                        layer.msg('已修改!', {icon: 1, time: 1000});
+                        layer.close(index);
+                        location.href = location.href
+                    },
+                    error: function (data) {
+                        console.log(data.msg);
+                        layer.close(index);
+                    },
+                });
+            });
+
         });
     }
 

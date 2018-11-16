@@ -38,12 +38,16 @@ def welcome(request):
 
 # 登陆
 def login_index(request):
+    base_url = mc.base_url
+    if request.user.is_authenticated():
+        username = request.user.username
+        log.info("login account:%s" % username)
+        return render(request, 'index.html', {"base_url": base_url, "username": username})
     if request.method == 'GET':
         return render(request, 'login.html')
     username = request.POST['username']
     password = request.POST['password']
     user = authenticate(username=username, password=password)
-    base_url = mc.base_url
     if user is not None:
         if user.is_active:
             login(request, user)
