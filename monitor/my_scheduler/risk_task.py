@@ -10,7 +10,7 @@ import monitor.my_util.my_db as my_db
 import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
 from monitor.my_util.serializers import *
-
+from decimal import *
 log = logging.getLogger(__name__)
 
 # 通过率检查 来源于  queryUserTransferReportDetail
@@ -86,10 +86,10 @@ def risk_pass_rate():
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] > 50 and count[1] * count[2] == 0:
             lv = 1
-            raise (TaskException(item, lv, item.value.get('msg1') % (count[1], count[2])))
+            raise (TaskException(item, lv, item.value.get('msg1') % (count[1]* 100, count[2]* 100)))
         if count[1] < 0.05 or count[2] < 0.1:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg1') % (count[1], count[2])))
+            raise (TaskException(item, lv, item.value.get('msg1') % (count[1]* 100, count[2]* 100)))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -125,7 +125,7 @@ def fail_reason():
         # 每个failreason的数量>10的情况下，该failreaon占比比前3天同期的变化率>50%，level=2
         if count:
             lv = 2
-            data = [item.value.get('msg1') % (c[0], c[3]) for c in count]
+            data = [item.value.get('msg1') % (c[0], c[3]* 100) for c in count]
             raise (TaskException(item, lv, ",".join(data)))
         task_success = True
     except TaskException as te:

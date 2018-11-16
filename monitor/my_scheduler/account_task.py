@@ -168,12 +168,12 @@ def today_repay():
         today = count[0] / count[1]
         if today < count[2] * D(0.3):
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg2') % (today, count[2])))
+            raise (TaskException(item, lv, item.value.get('msg2') % (today * 100, count[2] * 100)))
         # 如果当前时间与23点时间差值在600s（10分钟）范围内
         is23clock = abs(time_util.gettime(23) - time.time()) < 600
         if is23clock and today < 0.6:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg3') % today))
+            raise (TaskException(item, lv, item.value.get('msg3') % today * 100))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -238,7 +238,7 @@ def repayment_sms():
         if sms_success < 0.8 or count_turku[0] == 0:
             lv = 2
             msg = [item.value.get('msg1') % (
-                count_turku[1], count_sms[0], float(sms_success)) if sms_success < 0.8 else '',
+                count_turku[1], count_sms[0], float(sms_success) * 100) if sms_success < 0.8 else '',
                    item.value.get('msg2') if count_turku[0] == 0 else '']
             if '' in msg:
                 msg.remove('')
