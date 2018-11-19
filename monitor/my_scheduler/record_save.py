@@ -7,6 +7,7 @@ from monitor.my_scheduler import email_send, wechat
 import monitor.my_util.my_conf as my_conf
 import json
 from django.db import connection
+import monitor.my_util.my_db as my_db
 
 log = logging.getLogger(__name__)
 
@@ -55,6 +56,7 @@ def send_message(item_enum, lv, task_success, msg):
     # 获取微信发送
     wx_tag_id = ''
     try:
+        my_db.close_old_connections()
         cursor = connection.cursor()
         cursor.execute(
             "SELECT GROUP_CONCAT(g.`notify_wx_tags_id`) FROM `monitor_group` g LEFT JOIN `monitor_group_item` gi ON gi.`gro_id` = g.`id`  WHERE gi.`mon_id` = %d AND g.`gro_status`=1" % (
