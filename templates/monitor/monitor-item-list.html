@@ -2,7 +2,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <base href="{{ 0| get_base_url }}"/>
+    <base href="{{ 0| get_base_url }}"/>
     <base target="_blank"/>
     <meta charset="utf-8">
     <meta name="renderer" content="webkit|ie-comp|ie-stand">
@@ -44,6 +44,7 @@
                 <th width="80">触发方式</th>
                 <th width="80">描述</th>
                 <th width="80">是否开启</th>
+                <th width="80">手动触发</th>
             </tr>
             </thead>
             <tbody>
@@ -73,6 +74,10 @@
                                                     onclick="monitor_item_switch(this,{{ item.id }},{{ item.mon_status }})">不可用</span>
                         </td>
                     {% endif %}
+
+                    <td class="td-status"><span class="label label-fail radius"
+                                                onclick="monitor_item_start(this,{{ item.id }})">触发</span>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>
@@ -134,6 +139,23 @@
                 success: function (data) {
                     layer.msg('已修改!', {icon: 1, time: 1000});
                     location.href = location.href
+                },
+                error: function (data) {
+                    console.log(data.msg);
+                },
+            });
+        });
+    }
+
+    /*手动触发*/
+    function monitor_item_start(obj, id) {
+        layer.confirm('确认触发？', function (index) {
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: base_url + 'monitor/item-start/' + id + "/",
+                success: function (data) {
+                    layer.msg('已触发!', {icon: 1, time: 1000});
                 },
                 error: function (data) {
                     console.log(data.msg);

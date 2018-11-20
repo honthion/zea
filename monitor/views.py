@@ -21,6 +21,7 @@ from monitor.serializers import ItemSerializer, UserSerializer
 import monitor.my_scheduler.wechat as wc
 import re
 import monitor.my_util.my_conf as mc
+import monitor.my_scheduler.admin_scheduler as ast
 
 log = logging.getLogger(__name__)
 
@@ -114,6 +115,37 @@ def item(request, item_id='0'):
                 return JsonResponse({"success": True, "msg": "", "data": ""})
             except Item.DoesNotExist:
                 print ("DoesNotExist!")
+    print ("Error request!")
+    return JsonResponse({"success": False, "msg": "", "data": ""})
+
+
+# 触发监控项
+@login_required(login_url='/login')
+def item_start(request, item_id='0'):
+    if request.method == 'POST':
+        item_id = int(item_id)
+        try:
+            if item_id == 1:
+                ast.account_login()
+            elif item_id == 2:
+                ast.today_register()
+            elif item_id == 3:
+                ast.today_loan_amount()
+            elif item_id == 4:
+                ast.today_repay()
+            elif item_id == 5:
+                ast.repayment_sms()
+            elif item_id == 6:
+                ast.collection_assign()
+            elif item_id == 7:
+                ast.account_balance()
+            elif item_id == 8:
+                ast.risk_pass_rate()
+            elif item_id == 9:
+                ast.fail_reason()
+            return JsonResponse({"success": True, "msg": "", "data": ""})
+        except Item.DoesNotExist:
+            print ("DoesNotExist!")
     print ("Error request!")
     return JsonResponse({"success": False, "msg": "", "data": ""})
 
