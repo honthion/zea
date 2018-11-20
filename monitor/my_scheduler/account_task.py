@@ -211,7 +211,7 @@ def repayment_sms():
         cursor_lasvegas.execute('''
             SELECT COUNT(0)  
             FROM `sms_send_log`  
-            WHERE `deliver_status`=0 AND  `deliver_time` > CURDATE() AND `msg` REGEXP '^秒借呗.*您本期账单.*请知悉，谢谢！$' 
+            WHERE `deliver_status`=0 AND  `deliver_time` > CURDATE() AND `msg` REGEXP '^秒借呗.*您本期订单.*请知悉，谢谢！$' 
             ''')
         # [短信发送条数]
         count_sms = cursor_lasvegas.fetchone()

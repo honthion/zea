@@ -156,9 +156,11 @@
                 url: base_url + 'monitor/item-start/' + id + "/",
                 success: function (data) {
                     layer.msg('已触发!', {icon: 1, time: 1000});
+                      layer.close(index);
                 },
                 error: function (data) {
                     console.log(data.msg);
+                      layer.close(index);
                 },
             });
         });
