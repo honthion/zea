@@ -53,7 +53,7 @@ class ItemEnum(Enum):
     repayment_sms = {"id": 5,
                      "mon_type": 2,
                      "mon_title": "还款短信和语音提醒",
-                     "mon_trigger": "30 9,14 * *  *",
+                     "mon_trigger": "30 9,15 * *  *",
                      "mon_trigger_desc": "每天9:30检查一次",
                      "msg1": "【短信】应提醒%d，实际提醒%d,成功率%.2f%%",
                      "msg2": "【语音】应提醒%d，成功%d,成功率%.2f%%",
