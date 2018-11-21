@@ -53,10 +53,10 @@ class ItemEnum(Enum):
     repayment_sms = {"id": 5,
                      "mon_type": 2,
                      "mon_title": "还款短信和语音提醒",
-                     "mon_trigger": "30 9 * *  *",
+                     "mon_trigger": "30 9,14 * *  *",
                      "mon_trigger_desc": "每天9:30检查一次",
                      "msg1": "【短信】应提醒%d，实际提醒%d,成功率%.2f%%",
-                     "msg2": "【语音】无提醒",
+                     "msg2": "【语音】应提醒%d，成功%d,成功率%.2f%%",
                      "mon_desc": "如果没有发送提醒短信或者没有发送语音提醒，level=2;"}
     collection_assign = {"id": 6,
                          "mon_type": 2,
@@ -84,5 +84,5 @@ class ItemEnum(Enum):
                    "mon_title": "failReason异常检查",
                    "mon_trigger": "0 9-23/1 * * *",
                    "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
-                   "msg1": "【%s】占比变化率%.2f%%",
+                   "msg1": "【%s】%.2f%%\n",
                    "mon_desc": "每个failreason的数量>10的情况下，该failreaon占比比前3天同期的变化率>50%，level=2;"}

@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 import json
 import logging
-from datetime import datetime
+import datetime
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -171,8 +171,8 @@ def groups(request):
             # 插入
             group = Group.objects.create(gro_name=gro_name, gro_desc=gro_desc, gro_status=gro_status,
                                          notify_wx_tags=notify_wx_tags,
-                                         notify_wx_tags_id=notify_wx_tags_id, ctime=datetime.now(),
-                                         utime=datetime.now())
+                                         notify_wx_tags_id=notify_wx_tags_id, ctime=datetime.datetime.now(),
+                                         utime=datetime.datetime.now())
             # 批量插入中间表
             item_ids = item_str.split()
             gro_item_list = []
@@ -274,8 +274,14 @@ def recordSingle(request, record_id='0'):
                 mon_status = requestBody.get('mon_status')
                 if remark is not None:
                     record.remark = remark
+                # 设置预警状态设置为已恢复
                 if mon_status == 1:
                     record.mon_status = mon_status
+                    # 同时将监控项表的free_date 字段修改为今天
+                    mon_id = record.mon_id
+                    item = Item.objects.get(id=mon_id)
+                    item.free_date = datetime.date.today()
+                    item.save()
                 record.save()
         elif 'GET' == requestMethod:
             # 需要获取 分组信息

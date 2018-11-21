@@ -136,27 +136,30 @@ def today_repay():
             log.error("get db error.")
             return
         cursor = db.cursor()
-        cursor.execute(
-            "SELECT COUNT(`primeCost`) "
-            "FROM `credit_order`"
-            "WHERE DATE(`paymentDate`)=CURDATE() AND `repaymentState`=1 "
-
-            "UNION "
-
-            "SELECT COUNT(`primeCost`)"
-            "FROM `credit_order`"
-            "WHERE  DATE(`latestPaymentDate`)=CURDATE() "
-
-            "UNION "
-
-            "SELECT "
-            "( SELECT COUNT(`primeCost`) "
-            "FROM `credit_order` "
-            "WHERE `paymentDate` BETWEEN DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) AND DATE_SUB(NOW(), INTERVAL 1 DAY) AND `repaymentState` = 1 )"
-            " / "
-            "( SELECT COUNT(`primeCost`)"
-            " FROM `credit_order` "
-            "WHERE DATE(`latestPaymentDate`) = DATE(DATE_SUB(NOW(), INTERVAL 1 DAY)) )")
+        cursor.execute('''
+                    SELECT COUNT(0) 
+                    FROM `credit_order`
+                    WHERE   DATE(`latestPaymentDate`)=CURDATE()  AND `repaymentState`=1 
+                    
+                    UNION 
+                    
+                    SELECT COUNT(0)
+                    FROM `credit_order`
+                    WHERE  DATE(`latestPaymentDate`)=CURDATE() 
+                    
+                    UNION         
+        
+                    SELECT 
+                    ( SELECT COUNT(0) 
+                        FROM `credit_order` 
+                        WHERE `paymentDate` <=  DATE_SUB(NOW(), INTERVAL 1 DAY)
+                        AND `repaymentState` = 1 
+                        AND  DATE(`latestPaymentDate`) = CURDATE() -1)
+                        /
+                       ( SELECT COUNT(0)
+                        FROM `credit_order` 
+                        WHERE DATE(`latestPaymentDate`) = CURDATE() -1)
+        ''')
         # [今日还款数，今日应还款数，昨日还款率]
         count = [row[0] for row in cursor.fetchall()]
         # 如果回款量=0, level=1; 回款率 < 昨天同比30%，level=2；当天23:00时的回款率<60%, level=2;
@@ -218,10 +221,17 @@ def repayment_sms():
         # 语音发送
         cursor_turku = db_turku.cursor()
         cursor_turku.execute('''
-        SELECT  COUNT(0) 
+        
+        SELECT COUNT(0) 
         FROM `record_phone_no_operation` 
-        WHERE `operation_type`=1 AND `operation_status`=1 AND `ctime`>DATE_SUB(NOW(),INTERVAL 1 DAY)
-
+        WHERE DATE(ctime) = CURDATE() AND  `operation_type`=1 AND `operation_status`=1
+        
+        UNION ALL
+        
+        SELECT COUNT(0) 
+        FROM `record_phone_no_operation` 
+        WHERE DATE(ctime) = CURDATE()  AND  `operation_type`=1 AND `operation_status`=1 AND `remark` NOT BETWEEN 5 AND 6 
+        
         UNION ALL
         
         SELECT COUNT(0) 
@@ -230,19 +240,25 @@ def repayment_sms():
         AND (DATE(latestPaymentDate - 1)=CURDATE() OR DATE(latestPaymentDate)=CURDATE() )
         ''')
         count_turku = [row[0] for row in cursor_turku.fetchall()]
-        # [语音发送条数，总短信发送条数]
+        # [语音发送条数,语音发送成功数，总短信发送条数]
         if not (count_sms and count_turku):
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
-        # 判断短信发送的成功率
-        sms_success = float(count_sms[0]) / count_turku[1]
-        if sms_success < 0.8 or count_turku[0] == 0:
+        #  发送的成功率
+        is_am = time_util.gettime(12) - time.time() > 0
+        sms_success = float(count_sms[0]) / count_turku[2] > 0.8
+        aida_success = count_turku[0] != 0 and float(count_turku[1]) / count_turku[0] > 0.2
+        # 上午 判断 T，T-1 发送 成功功率小于80%
+        if is_am and not sms_success and count_turku[0]:
             lv = 2
-            msg = [item.value.get('msg1') % (
-                count_turku[1], count_sms[0], float(sms_success) * 100) if sms_success < 0.8 else '',
-                   item.value.get('msg2') if count_turku[0] == 0 else '']
-            if '' in msg:
-                msg.remove('')
-            raise (TaskException(item, lv, ','.join(msg)))
+            msg = item.value.get('msg1') % (
+                (count_turku[2], count_sms[0], float(count_sms[0]) / count_turku[2] * 100))
+        # 下午 判断艾达语音 发送 成功功率小于20%
+        if not is_am and not aida_success and count_turku[0]:
+            lv = 2
+            msg = item.value.get('msg2') % (
+                (count_turku[0], count_turku[1],  float(count_turku[1]) / count_turku[0] * 100))
+        if lv != 0:
+            raise (TaskException(item, lv, msg))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -258,7 +274,7 @@ def repayment_sms():
         if db_turku:
             db_turku.close()
         record_save.save_record(item, lv, task_success, msg)
-    return count_sms.extend(count_turku)
+        return count_turku
 
 
 # 催收案件分配
@@ -278,14 +294,26 @@ def collection_assign():
         # 催收案件分配
         cursor_turku = db_turku.cursor()
         cursor_turku.execute(
-            "SELECT  COUNT(0) "
-            "FROM `urge_order` "
-            "WHERE  `outAddTime`>DATE_SUB(NOW(),INTERVAL 1 DAY) ")
+            '''
+            SELECT COUNT(0)
+            FROM
+              (SELECT DISTINCT `name`
+               FROM manager
+               WHERE `type` IN (5,
+                                10,
+                                12)
+                 AND enabled = 1
+                 AND `name` NOT IN
+                   (SELECT DISTINCT `managerName`
+                    FROM `urge_order`
+                    WHERE DATE(outAddTime) = CURDATE())) s     
+            '''
+        )
         # [催收案件条数]
         count = cursor_turku.fetchone()
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
-        if count[0] == 0:
+        if count[0] != 0:
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg1')))
         task_success = True

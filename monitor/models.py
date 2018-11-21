@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.db import models
 from enum import Enum, unique
 from pojo import my_enum
+import datetime
 
 
 # 监控项
@@ -16,6 +17,7 @@ class Item(models.Model):
     mon_trigger_desc = models.CharField(max_length=255, default='', null=False)  # 触发器解释
     mon_desc = models.CharField(max_length=1024, default='', null=False, blank=True)  # 描述
     mon_status = models.PositiveSmallIntegerField(default=1, null=False)  # 状态
+    free_date = models.DateField(default=datetime.date.today() - datetime.timedelta(days=1), null=False)  # 免预警的日期
 
     def __str__(self):
         return self.mon_title

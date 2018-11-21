@@ -133,7 +133,7 @@
 
     /*更改状态*/
     function monitor_record_status(obj, id) {
-        layer.confirm('确认将状态恢复为正常？', function (index) {
+        layer.confirm('确认后今日将不再预警！', function (index) {
             $.ajax({
                 type: 'put',
                 dataType: 'json',
@@ -143,7 +143,7 @@
                     "mon_status": 1
                 })),
                 success: function (data) {
-                    layer.msg('已恢复!', {icon: 1, time: 1000});
+                    layer.msg('已完成!', {icon: 1, time: 1000});
                     location.href = location.href
                 },
                 error: function (data) {

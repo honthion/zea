@@ -36,9 +36,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.base_task.value.get('mon_trigger')), replace_existing=True)
 def account_login():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.base_task.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.base_task):
         base_task.account_login()
 
 
@@ -47,9 +45,7 @@ def account_login():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_register.value.get('mon_trigger')),
               replace_existing=True)
 def today_register():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.today_register.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.today_register):
         account_task.today_register()
 
 
@@ -58,9 +54,7 @@ def today_register():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_loan_amount.value.get('mon_trigger')),
               replace_existing=True)
 def today_loan_amount():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.today_loan_amount.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.today_loan_amount):
         account_task.today_loan_amount()
 
 
@@ -68,9 +62,7 @@ def today_loan_amount():
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.today_repay.value.get('mon_trigger')), replace_existing=True)
 def today_repay():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.today_repay.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.today_repay):
         account_task.today_repay()
 
 
@@ -79,9 +71,7 @@ def today_repay():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.repayment_sms.value.get('mon_trigger')),
               replace_existing=True)
 def repayment_sms():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.repayment_sms.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.repayment_sms):
         account_task.repayment_sms()
 
 
@@ -90,9 +80,7 @@ def repayment_sms():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.collection_assign.value.get('mon_trigger')),
               replace_existing=True)
 def collection_assign():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.collection_assign.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.collection_assign):
         account_task.collection_assign()
 
 
@@ -101,9 +89,7 @@ def collection_assign():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.account_balance.value.get('mon_trigger')),
               replace_existing=True)
 def account_balance():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.account_balance.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.account_balance):
         account_task.account_balance()
 
 
@@ -112,9 +98,7 @@ def account_balance():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.risk_pass_rate.value.get('mon_trigger')),
               replace_existing=True)
 def risk_pass_rate():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.risk_pass_rate.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.risk_pass_rate):
         risk_task.risk_pass_rate()
 
 
@@ -123,10 +107,16 @@ def risk_pass_rate():
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.fail_reason.value.get('mon_trigger')),
               replace_existing=True)
 def fail_reason():
-    my_db.close_old_connections()
-    item = Item.objects.filter(mon_title=ItemEnum.fail_reason.value.get('mon_title'))
-    if item and item[0].mon_status == 1:
+    if check_task_status(ItemEnum.fail_reason):
         risk_task.fail_reason()
+
+
+# 判断是否启动这个定时任务
+def check_task_status(item_enum):
+    my_db.close_old_connections()
+    item = Item.objects.filter(mon_title=item_enum.value.get('mon_title'),
+                               mon_status=1).exclude(free_date=datetime.datetime.today())
+    return item
 
 
 register_events(scheduler)
