@@ -27,7 +27,7 @@ fail_reason_sql = '''
                      (SELECT COUNT(0) AS total
                       FROM identificate_order t1
                       WHERE t1.failReason != '' AND DATE(t1.failTime) >= CURDATE() ) s2 
-                    WHERE s1.failCount / s2.total > 0.1
+                    WHERE s1.failCount / s2.total > 0.3
                 '''
 
 
