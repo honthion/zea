@@ -57,14 +57,14 @@ class ItemEnum(Enum):
                      "mon_trigger_desc": "每天9:30检查一次",
                      "msg1": "【短信】应提醒%d，实际提醒%d,成功率%.2f%%",
                      "msg2": "【语音】应提醒%d，成功%d,成功率%.2f%%",
-                     "mon_desc": "如果没有发送提醒短信或者没有发送语音提醒，level=2;"}
+                     "mon_desc": "短信（T、T-1）成功率0.8；语音首次成功率0.2，level=2;"}
     collection_assign = {"id": 6,
                          "mon_type": 2,
                          "mon_title": "催收案件分配",
                          "mon_trigger": "30 9 * *  *",
                          "mon_trigger_desc": "每天9:30检查一次",
                          "msg1": "没有催收案件分配",
-                         "mon_desc": "如果没有催收案件分配，level=2;"}
+                         "mon_desc": "催收案件每个managerId都有分配，level=2;"}
     account_balance = {"id": 7,
                        "mon_type": 2,
                        "mon_title": "账户余额",
@@ -85,4 +85,4 @@ class ItemEnum(Enum):
                    "mon_trigger": "0 9-23/1 * * *",
                    "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
                    "msg1": "【%s】%.2f%%\n",
-                   "mon_desc": "每个failreason的数量>10的情况下，该failreaon占比比前3天同期的变化率>50%，level=2;"}
+                   "mon_desc": "failreaon占比>30%，level=2;"}
