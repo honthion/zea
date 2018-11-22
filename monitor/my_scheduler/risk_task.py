@@ -183,7 +183,7 @@ def pass_loan_rate():
             log.error("get db error.")
             return
         cursor = db.cursor()
-        cursor.execute(pass_loan_rate_sql % (10, 0.6))
+        cursor.execute(pass_loan_rate_sql % (10, 0.9))
         # [id，平台名称，通过人数，首借人数，通过借款率]
         count = cursor.fetchall()
         count_new = []
