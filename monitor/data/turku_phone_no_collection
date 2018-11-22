@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+import pandas as pd
+import numpy
+from pandas import Series, DataFrame
+
+
+def read_file():
+    fh = open('D:\\OneDrive\\desktop\\all1.txt')
+    lines = fh.readlines()
+    user_list = []
+    all_list = []
+    for line in lines:
+        list = line.split("\t")
+        list.remove("\n")
+        user_list.append(list[3])
+        all_list.extend(list[4:])
+    result = pd.value_counts(all_list)
+    s = result[user_list].sort_values(ascending=False)
+    df = pd.DataFrame(s)
+    df.to_csv('data.txt', index=True, sep='\t')
+
+
+def test():
+    result = pd.value_counts([1, 3, 2, 5, 1, 2, 5])
+    print result[1]
+    print result[5]
+    print  type(result)
+    ser1 = pd.Series([], index=[])
+    ser1['18623001528'] = 156
+    ser1['13261575028'] = 999
+    df = pd.DataFrame(ser1)
+    print df
+    df.to_csv('data2.txt', index=True, sep='\t')
+    # f = open("./result.txt", 'w+')
+    # print >> f, ser1
+
+
+read_file()
+# test()
