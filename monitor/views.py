@@ -143,6 +143,10 @@ def item_start(request, item_id='0'):
                 ast.risk_pass_rate()
             elif item_id == 9:
                 ast.fail_reason()
+            elif item_id == 10:
+                ast.pass_loan_rate()
+            elif item_id == 11:
+                ast.overdue_rate_m1()
             return JsonResponse({"success": True, "msg": "", "data": ""})
         except Item.DoesNotExist:
             print ("DoesNotExist!")
