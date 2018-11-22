@@ -111,6 +111,24 @@ def fail_reason():
         risk_task.fail_reason()
 
 
+# 通过借款率监控
+@register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.pass_loan_rate.value.get('mon_trigger')),
+#               replace_existing=True)
+def pass_loan_rate():
+    if check_task_status(ItemEnum.pass_loan_rate):
+        risk_task.pass_loan_rate()
+
+
+# 渠道首逾监控
+@register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+# @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.overdue_rate_m1.value.get('mon_trigger')),
+#               replace_existing=True)
+def overdue_rate_m1():
+    if check_task_status(ItemEnum.overdue_rate_m1):
+        risk_task.overdue_rate_m1()
+
+
 # 判断是否启动这个定时任务
 def check_task_status(item_enum):
     my_db.close_old_connections()

@@ -11,6 +11,7 @@ import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
 from monitor.my_util.serializers import *
 from decimal import *
+
 log = logging.getLogger(__name__)
 
 # 通过率检查 来源于  queryUserTransferReportDetail
@@ -29,6 +30,61 @@ fail_reason_sql = '''
                       WHERE t1.failReason != '' AND DATE(t1.failTime) >= CURDATE() ) s2 
                     WHERE s1.failCount / s2.total > 0.3
                 '''
+# 借款率监控
+pass_loan_rate_sql = '''
+SELECT u1.`platformId` id,
+       dp.`platformName` `name`,
+       u1.rsc pc,
+       IFNULL(u2.oc, 0) oc,
+       IFNULL(u2.oc, 0)/u1.rsc rate
+FROM
+  (-- 认证成功量
+SELECT COUNT(0) rsc,
+       `platformId`
+   FROM `user`
+   WHERE `passTime`>=CURDATE()
+   GROUP BY `platformId`
+   HAVING rsc >=%d)u1
+LEFT JOIN
+  (-- 借款人数
+SELECT COUNT(0) oc,
+       `platformId`
+   FROM `user`
+   WHERE `passTime`>=CURDATE()
+     AND `loanCount`>0
+   GROUP BY `platformId`) u2 ON u1.`platformId`=u2.`platformId`
+LEFT JOIN `daoliu_platform` dp ON dp.id = u1.`platformId`
+WHERE IFNULL(u2.oc, 0)/IFNULL(u1.rsc, 0)>=%f
+ORDER BY rate DESC
+'''
+
+overdue_rate_m1_sql = '''
+SELECT r1.id,
+       r1.name,
+       r1.cnt,
+       IFNULL(r2.cnt, 0) cnt2,
+       IFNULL(r2.cnt, 0)/r1.cnt rate
+FROM
+  (SELECT dp.id,
+          dp.`platformName` `name`,
+          COUNT(0) cnt
+   FROM `credit_order` co
+   LEFT JOIN `user` u ON u.id = co.`userId`
+   LEFT JOIN `daoliu_platform` dp ON dp.id = u.`platformId`
+   WHERE co.`latestPaymentDate` = CURDATE()-1
+   GROUP BY u.`platformId`
+   HAVING cnt>=%d) r1
+LEFT JOIN
+  (SELECT u.`platformId` id,
+          COUNT(0) cnt
+   FROM `credit_order` co
+   LEFT JOIN `user` u ON u.id = co.`userId`
+   WHERE co.`latestPaymentDate` = CURDATE()-1
+     AND DATE(`paymentDate`) <= CURDATE()-1
+   GROUP BY u.`platformId`) r2 ON r1.id = r2.id
+WHERE IFNULL(r2.cnt, 0)/r1.cnt <=%f
+ORDER BY rate DESC
+'''
 
 
 # 通过率检查
@@ -54,14 +110,15 @@ def risk_pass_rate():
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] > 50 and count[1] * count[2] == 0:
             lv = 1
-            raise (TaskException(item, lv, item.value.get('msg1') % (count[1]* 100, count[2]* 100)))
+            raise (TaskException(item, lv, item.value.get('msg1') % (count[1] * 100, count[2] * 100)))
         if count[1] < 0.05 or count[2] < 0.1:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg1') % (count[1]* 100, count[2]* 100)))
+            raise (TaskException(item, lv, item.value.get('msg1') % (count[1] * 100, count[2] * 100)))
         task_success = True
     except TaskException as te:
         msg = te.msg
-        log.error("risk_pass_rate alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
+        log.error(
+            "risk_pass_rate alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
     except Exception as e:
         msg = "risk_pass_rate fail."
         log.error("risk_pass_rate fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
@@ -93,8 +150,8 @@ def fail_reason():
         # 该failreaon占比>50%，level=2
         if count:
             lv = 2
-            data = [item.value.get('msg1') % (c[0], c[1]* 100) for c in count]
-            raise (TaskException(item, lv, ",".join(data)))
+            data = [item.value.get('msg1') % (c[0], c[1] * 100) for c in count]
+            raise (TaskException(item, lv, "failReason异常\n" + "".join(data)))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -103,6 +160,80 @@ def fail_reason():
     except Exception as e:
         msg = "fail_reason fail."
         log.error("fail_reason fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
+    finally:
+        if db:
+            db.close()
+        record_save.save_record(item, lv, task_success, msg)
+        return count
+
+
+# 通过借款率监控
+def pass_loan_rate():
+    task_success = False
+    lv = 0
+    db = None
+    count = []
+    item = ItemEnum.pass_loan_rate
+    msg = ''
+    try:
+        db = my_db.get_turku_db()
+        if not db:
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        cursor = db.cursor()
+        cursor.execute(pass_loan_rate_sql % (10, 0.9))
+        # [id，平台名称，通过人数，首借人数，通过借款率]
+        count = cursor.fetchall()
+        if count:
+            lv = 2
+            data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count]
+            raise (TaskException(item, lv, "通过借款率\n" + "".join(data)))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error(
+            "pass_loan_rate alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
+    except Exception as e:
+        msg = "pass_loan_rate fail."
+        log.error("pass_loan_rate fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
+    finally:
+        if db:
+            db.close()
+        record_save.save_record(item, lv, task_success, msg)
+        return count
+
+
+# 渠道首逾监控
+def overdue_rate_m1():
+    task_success = False
+    lv = 0
+    db = None
+    count = []
+    item = ItemEnum.overdue_rate_m1
+    msg = ''
+    try:
+        db = my_db.get_turku_db()
+        if not db:
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        cursor = db.cursor()
+        cursor.execute(overdue_rate_m1_sql % (8, 0.5))
+        # [id，平台名称，应还笔数，自然还款笔数，自然还款率]
+        count = cursor.fetchall()
+        if count:
+            lv = 2
+            data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count]
+            raise (TaskException(item, lv, "自然还款率\n" + "".join(data)))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error(
+            "overdue_rate_m1 alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count, default=defaultencode), te.level, te.msg))
+    except Exception as e:
+        msg = "overdue_rate_m1 fail."
+        log.error("overdue_rate_m1 fail.data:%s,msg:%s" % (json.dumps(count, default=defaultencode), e.message))
     finally:
         if db:
             db.close()

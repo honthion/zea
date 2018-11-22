@@ -86,3 +86,17 @@ class ItemEnum(Enum):
                    "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
                    "msg1": "【%s】%.2f%%\n",
                    "mon_desc": "failreaon占比>30%，level=2;"}
+    pass_loan_rate = {"id": 10,
+                      "mon_type": 3,
+                      "mon_title": "通过借款率监控 ",
+                      "mon_trigger": "0 9-23/1 * * *",
+                      "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
+                      "msg1": "【%s】%.2f%%\n",
+                      "mon_desc": "借款率>30%，level=2;"}
+    overdue_rate_m1 = {"id": 11,
+                       "mon_type": 3,
+                       "mon_title": "渠道首逾监控",
+                       "mon_trigger": "1 0 * * *",
+                       "mon_trigger_desc": "每天00:01查询一次",
+                       "msg1": "【%s】%.2f%%\n",
+                       "mon_desc": "昨日应还的某个渠道的借款数>=8，并且自然还款率<=50，level=2;"}

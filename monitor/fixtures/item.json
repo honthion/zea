@@ -65,7 +65,7 @@
       "mon_type": 2,
       "mon_trigger": "0 30 9 * * ? *",
       "mon_trigger_desc": "每天9:30检查",
-      "mon_desc": "如果短信发送成功率<0.8,语音提醒未发送，level=2",
+      "mon_desc": "短信（T、T-1）成功率0.8；语音首次成功率0.2，level=2;",
       "mon_status": 1
     }
   },
@@ -121,13 +121,41 @@
       "mon_type": 3,
       "mon_trigger": "0 0 9-23/1 * * ? *",
       "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
-      "mon_desc": "每个failreason的数量>10的情况下，该failreaon占比比前3天同期的变化率>50%，level=2",
+      "mon_desc": "failreaon占比>30%，level=2;",
       "mon_status": 1
     }
   },
   {
     "model": "monitor.item",
     "pk": 10,
+    "fields": {
+      "ctime": "2001-01-01T00:00:00Z",
+      "utime": "2001-01-01T00:00:00Z",
+      "mon_title": "通过借款率监控",
+      "mon_type": 3,
+      "mon_trigger": "0 0 9-23/1 * * ? *",
+      "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
+      "mon_desc": "当日的某个渠道的通过数>=10的情况下，借款率>=90%，level=2",
+      "mon_status": 1
+    }
+  },
+  {
+    "model": "monitor.item",
+    "pk": 11,
+    "fields": {
+      "ctime": "2001-01-01T00:00:00Z",
+      "utime": "2001-01-01T00:00:00Z",
+      "mon_title": "渠道首逾监控",
+      "mon_type": 3,
+      "mon_trigger": "0 1 0 * * ? *",
+      "mon_trigger_desc": "每天00:01查询一次",
+      "mon_desc": "昨日应还的某个渠道的借款数>=8，并且自然还款率<=50，level=2",
+      "mon_status": 1
+    }
+  },
+  {
+    "model": "monitor.item",
+    "pk": 12,
     "fields": {
       "ctime": "2001-01-01T00:00:00Z",
       "utime": "2001-01-01T00:00:00Z",
