@@ -99,4 +99,4 @@ class ItemEnum(Enum):
                        "mon_trigger": "2 0 * * *",
                        "mon_trigger_desc": "每天00:01查询一次",
                        "msg1": "【%s】%.2f%%\n",
-                       "mon_desc": "昨日应还的某个渠道的借款数>=8，并且自然还款率<=50，level=2;"}
+                       "mon_desc": "昨日应还的某个渠道的借款数>=8，并且自然还款率<=50%，level=2;"}

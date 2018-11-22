@@ -54,14 +54,14 @@
                     <td>{{ item.mon_type|get_mon_type_name }}</td>
                     <td>{{ item.ctime|date:"Y-m-d H:i:s" }}</td>
                     {% if item.mon_status == 2 %}
-                        <td class="td-status"><span class="radius btn btn-danger"
+                        <td class="td-status"><span class="radius btn btn-danger"  title="点击关闭该项今日预警"
                                                     onclick="monitor_record_status(this,{{ item.id }})">告警中</span>
                         </td>
                     {% elif item.mon_status == 3 %}
-                        <td class="td-status"><span class="radius btn btn-default">恢复</span>
+                        <td class="td-status"><span class="radius ">恢复</span>
                         </td>
                     {% else %}
-                        <td class="td-status"><span class="radius btn btn-success">正常</span>
+                        <td class="td-status"><span class="radius">正常</span>
                         </td>
                     {% endif %}
                     <td>{{ item.utime|date:"Y-m-d H:i:s" }}</td>
