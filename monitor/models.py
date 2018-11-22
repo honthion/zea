@@ -18,6 +18,7 @@ class Item(models.Model):
     mon_desc = models.CharField(max_length=1024, default='', null=False, blank=True)  # 描述
     mon_status = models.PositiveSmallIntegerField(default=1, null=False)  # 状态
     free_date = models.DateField(default=datetime.date.today() - datetime.timedelta(days=1), null=False)  # 免预警的日期
+    free_data = models.CharField(default='', max_length=1000, null=False, blank=False)  # 免预警平台名称
 
     def __str__(self):
         return self.mon_title
@@ -78,3 +79,4 @@ class Record(models.Model):
     class Meta:
         ordering = ('-utime',)
         get_latest_by = "utime"
+

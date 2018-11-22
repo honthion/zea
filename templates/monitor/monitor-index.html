@@ -54,9 +54,17 @@
                     <td>{{ item.mon_type|get_mon_type_name }}</td>
                     <td>{{ item.ctime|date:"Y-m-d H:i:s" }}</td>
                     {% if item.mon_status == 2 %}
-                        <td class="td-status"><span class="radius btn btn-danger"  title="点击关闭该项今日预警"
-                                                    onclick="monitor_record_status(this,{{ item.id }})">告警中</span>
-                        </td>
+                        {% if item.mon_id != 10 %}
+                            <td class="td-status">
+                                <span class="radius btn btn-danger" title="点击关闭该项今日预警"
+                                      onclick="monitor_record_status(this,{{ item.id }},{{ item.mon_id }})">告警中</span>
+                            </td>
+                        {% else %}
+                            {% autoescape off %}
+                                {{ item.err_info|split_plf_name }}
+                            {% endautoescape %}
+                        {% endif %}
+
                     {% elif item.mon_status == 3 %}
                         <td class="td-status"><span class="radius ">恢复</span>
                         </td>
@@ -132,7 +140,8 @@
   {% endcomment %}
 
     /*更改状态*/
-    function monitor_record_status(obj, id) {
+    function monitor_record_status(obj, id, type) {
+        console.log(type)
         layer.confirm('确认后今日将不再预警！', function (index) {
             $.ajax({
                 type: 'put',
@@ -153,8 +162,31 @@
         });
     }
 
+    /*更改状态*/
+    function monitor_record_status_plf(obj, id, plf_name) {
+        layer.confirm('确认后今日将不再预警！', function (index) {
+            $.ajax({
+                type: 'put',
+                dataType: 'json',
+                contentType: "application/json",
+                url: base_url + 'monitor/item-plf-free/' + id + "/",
+                data: JSON.stringify(({
+                    "plf_free_name": plf_name
+                })),
+                success: function (data) {
+                    layer.msg('已完成!', {icon: 1, time: 1000});
+                    location.href = location.href
+                },
+                error: function (data) {
+                    console.log(data.msg);
+                },
+            });
+        });
+    }
+
     /*修改备注信息*/
     function record_remark_edit(id, remark) {
+
         layer.prompt({title: '备注', value: remark, formType: 2}, function (text, index) {
             layer.confirm('确认修改？', function (index) {
                 $.ajax({

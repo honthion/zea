@@ -22,6 +22,7 @@ import monitor.my_scheduler.wechat as wc
 import re
 import monitor.my_util.my_conf as mc
 import monitor.my_scheduler.admin_scheduler as ast
+from monitor.models import *
 
 log = logging.getLogger(__name__)
 
@@ -258,6 +259,37 @@ def groupSingle(request, gro_id='0'):
                           {'item_list': item_list, "group": group, "wx_tags": wx_tag_ids, "tag_list": tag_list})
         else:
             pass
+    except Exception as e:
+        print ("Exception!" + e.message)
+        return JsonResponse({"success": False, "msg": e.message, "data": ""})
+    return JsonResponse({"success": True, "msg": "", "data": ""})
+
+
+# 将平台免预警
+@login_required(login_url='/login')
+def item_plf_free(request, item_id='0'):
+    requestMethod = request.method
+    try:
+        if 'PUT' == requestMethod:
+            requestBody = json.loads(request.body)
+            plf_free_name = requestBody.get('plf_free_name')
+            if plf_free_name and item_id:
+                # 对item表修改
+                item = Item.objects.filter(id=item_id)[0]
+                free_list = item.free_data.split(',')
+                free_list.append(plf_free_name)
+                item.free_data = ",".join(list(set(free_list)))
+                item.save()
+                # 对err_info表中减少
+                record = Record.objects.filter(mon_id=item_id).latest()
+                err_info = record.err_info
+                err_info_list = err_info.split(",")
+                err_info_list.remove(plf_free_name)
+                err_info = ",".join(err_info_list)
+                if not err_info:
+                    record.mon_status = 2
+                record.err_info = err_info
+                record.save()
     except Exception as e:
         print ("Exception!" + e.message)
         return JsonResponse({"success": False, "msg": e.message, "data": ""})

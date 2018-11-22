@@ -11,6 +11,7 @@ import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
 from monitor.my_util.serializers import *
 from decimal import *
+from monitor.models import *
 
 log = logging.getLogger(__name__)
 
@@ -182,12 +183,20 @@ def pass_loan_rate():
             log.error("get db error.")
             return
         cursor = db.cursor()
-        cursor.execute(pass_loan_rate_sql % (10, 0.9))
+        cursor.execute(pass_loan_rate_sql % (10, 0.6))
         # [id，平台名称，通过人数，首借人数，通过借款率]
         count = cursor.fetchall()
+        count_new = []
         if count:
+            # 找出所有的今天免预警的名称
+            free_plf_names = Item.objects.filter(id=10)[0].free_data.split(",")
+            for c in count:
+                if c[1] not in free_plf_names:
+                    count_new.append(c)
+
+        if count_new:
             lv = 2
-            data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count]
+            data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count_new]
             raise (TaskException(item, lv, "通过借款率\n" + "".join(data)))
         task_success = True
     except TaskException as te:
@@ -200,8 +209,9 @@ def pass_loan_rate():
     finally:
         if db:
             db.close()
+
         record_save.save_record(item, lv, task_success, msg)
-        return count
+        return count_new
 
 
 # 渠道首逾监控

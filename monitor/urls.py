@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^items/$', views.items),
     url(r'^items/(?P<item_id>\d+)/$', views.item),
     url(r'^item-start/(?P<item_id>\d+)/$', views.item_start),
+    url(r'^item-plf-free/(?P<item_id>\d+)/$', views.item_plf_free),
 
     url(r'^groups/$', views.groups),
     url(r'^group/$', views.group),

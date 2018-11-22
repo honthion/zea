@@ -117,7 +117,11 @@ def fail_reason():
               replace_existing=True)
 def pass_loan_rate():
     if check_task_status(ItemEnum.pass_loan_rate):
-        risk_task.pass_loan_rate()
+        count_new = risk_task.pass_loan_rate()
+        msg = ",".join([c[1] for c in count_new])
+        record = Record.objects.filter(mon_id=10).latest()
+        record.err_info = msg
+        record.save()
 
 
 # 渠道首逾监控
@@ -127,6 +131,12 @@ def pass_loan_rate():
 def overdue_rate_m1():
     if check_task_status(ItemEnum.overdue_rate_m1):
         risk_task.overdue_rate_m1()
+
+
+# 每日清空Item表中的free_data
+@register_job(scheduler, CronTrigger.from_crontab("0 0 * * *"), replace_existing=True)
+def clean_free_data():
+    Item.objects.filter(id=10).update(free_data='')
 
 
 # 判断是否启动这个定时任务
