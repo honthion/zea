@@ -9,15 +9,41 @@ def read_file():
     lines = fh.readlines()
     user_list = []
     all_list = []
+    count = 0
+    user_set = []
+    user_set1 = []
     for line in lines:
         list = line.split("\t")
         list.remove("\n")
-        user_list.append(list[3])
+        user_id = list[1]
+        if user_id in user_set:
+            user_set1.append(user_id)
+            return
+        user_set.append(user_id)
         all_list.extend(list[4:])
-    result = pd.value_counts(all_list)
-    s = result[user_list].sort_values(ascending=False)
-    df = pd.DataFrame(s)
-    df.to_csv('data.txt', index=True, sep='\t')
+        user_list.append(list[3])
+
+    file = open('data_user_list.txt', 'w')
+    for id in user_set:
+        file.write(str(id) + "\n")
+    file.close()
+
+    file = open('data_user_list1.txt', 'w')
+    for id in user_set1:
+        file.write(str(id) + "\n")
+    file.close()
+
+    # result = pd.value_counts(all_list)
+    # df = pd.DataFrame(result)
+    # df.to_csv('data_all1.txt', index=True, sep='\t')
+    # s = result[user_list].sort_values(ascending=False)
+    # df = pd.DataFrame(s)
+    # df.to_csv('data_user1.txt', index=True, sep='\t')
+
+
+def test1():
+    all_phone_no = pd.read_csv("data_user.txt", sep="\t", names=['phone_no', 'count'], skiprows=[0]).fillna(0)
+    all_phone_no.to_csv('data_user_new.txt', index=False, sep='\t')
 
 
 def test():
@@ -35,5 +61,6 @@ def test():
     # print >> f, ser1
 
 
-read_file()
+# read_file()
+test1()
 # test()

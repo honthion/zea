@@ -248,7 +248,7 @@ def repayment_sms():
         sms_success = float(count_sms[0]) / count_turku[2] > 0.8
         aida_success = count_turku[0] != 0 and float(count_turku[1]) / count_turku[0] > 0.2
         # 上午 判断 T，T-1 发送 成功功率小于80%
-        if is_am and not sms_success and count_turku[0]:
+        if is_am and not sms_success and count_sms[0]:
             lv = 2
             msg = item.value.get('msg1') % (
                 (count_turku[2], count_sms[0], float(count_sms[0]) / count_turku[2] * 100))
