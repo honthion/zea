@@ -176,7 +176,7 @@ def today_repay():
         is23clock = abs(time_util.gettime(23) - time.time()) < 600
         if is23clock and today < 0.6:
             lv = 2
-            raise (TaskException(item, lv, item.value.get('msg3') % today * 100))
+            raise (TaskException(item, lv, item.value.get('msg3') % (today * 100)))
         task_success = True
     except TaskException as te:
         msg = te.msg

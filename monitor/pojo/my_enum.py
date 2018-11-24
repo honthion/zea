@@ -44,11 +44,11 @@ class ItemEnum(Enum):
     today_repay = {"id": 4,
                    "mon_type": 2,
                    "mon_title": "当日回款",
-                   "mon_trigger": "56 11-23/1 * *  *",
+                   "mon_trigger": "58 11-23/1 * *  *",
                    "mon_trigger_desc": "每天从12:00-00:00，每个小时查询一次",
                    "msg1": "回款量=0",
                    "msg2": "回款率%.2f%% < 昨天同比%.2f%%的30%%",
-                   "msg3": "23:00时的回款率%.2f%% < 60%",
+                   "msg3": "23:00时的回款率%.2f%% < 60%%",
                    "mon_desc": "如果回款量=0, level=1; 回款率<昨天同比30%，level=2;23:00时的回款率<60%, level=2;"}
     repayment_sms = {"id": 5,
                      "mon_type": 2,
@@ -89,7 +89,7 @@ class ItemEnum(Enum):
     pass_loan_rate = {"id": 10,
                       "mon_type": 3,
                       "mon_title": "通过借款率监控 ",
-                      "mon_trigger": "56 8-23/1 * * *",
+                      "mon_trigger": "58 8-23/1 * * *",
                       "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
                       "msg1": "【%s】%.2f%%\n",
                       "mon_desc": "当日的某个渠道的通过数>=10的情况下，借款率>=90%，level=2"}
