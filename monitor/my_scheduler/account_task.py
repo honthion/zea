@@ -212,11 +212,14 @@ def repayment_sms():
         # 短信发送
         cursor_lasvegas = db_lasvegas.cursor()
         cursor_lasvegas.execute('''
-            SELECT COUNT(0)  
-            FROM `sms_send_log`  
-            WHERE `deliver_status`=0 AND  `deliver_time` > CURDATE() AND `msg` REGEXP '^秒借呗.*您本期订单.*请知悉，谢谢！$' 
+            SELECT COUNT(1) total,
+            SUM(IF(deliver_status=0,1,0)) success,
+            SUM(IF(deliver_status=-1,1,0)) pending,
+            SUM(IF(deliver_status=1,1,0)) failed,
+            SUM(IF(deliver_status=0,1,0))/COUNT(1) successRate 
+            FROM sms_send_log WHERE app_gid = 'zm6agpq3vt' AND msg_type = 1 AND msg LIKE '%您本期订单%' AND DATE(ctime) >= CURDATE() ;
             ''')
-        # [短信发送条数]
+        # [短信发送条数，成功，进行中，失败，成功率]
         count_sms = cursor_lasvegas.fetchone()
         # 语音发送
         cursor_turku = db_turku.cursor()
@@ -245,18 +248,18 @@ def repayment_sms():
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         #  发送的成功率
         is_am = time_util.gettime(12) - time.time() > 0
-        sms_success = float(count_sms[0]) / count_turku[2] > 0.8
+        sms_success = count_sms[4] > 0.8
         aida_success = count_turku[0] != 0 and float(count_turku[1]) / count_turku[0] > 0.2
         # 上午 判断 T，T-1 发送 成功功率小于80%
         if is_am and not sms_success and count_sms[0]:
             lv = 2
             msg = item.value.get('msg1') % (
-                (count_turku[2], count_sms[0], float(count_sms[0]) / count_turku[2] * 100))
+                (count_sms[0], count_sms[1], count_sms[4] * 100))
         # 下午 判断艾达语音 发送 成功功率小于20%
         if not is_am and not aida_success and count_turku[0]:
             lv = 2
             msg = item.value.get('msg2') % (
-                (count_turku[0], count_turku[1],  float(count_turku[1]) / count_turku[0] * 100))
+                (count_turku[0], count_turku[1], float(count_turku[1]) / count_turku[0] * 100))
         if lv != 0:
             raise (TaskException(item, lv, msg))
         task_success = True
