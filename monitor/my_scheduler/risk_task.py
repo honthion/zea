@@ -58,7 +58,7 @@ LEFT JOIN `daoliu_platform` dp ON dp.id = u1.`platformId`
 WHERE IFNULL(u2.oc, 0)/IFNULL(u1.rsc, 0)>=%f
 ORDER BY rate DESC
 '''
-
+# 首逾-自然还款率
 overdue_rate_m1_sql = '''
 SELECT r1.id,
        r1.name,
@@ -84,7 +84,7 @@ LEFT JOIN
      AND DATE(`paymentDate`) <= CURDATE()-1
    GROUP BY u.`platformId`) r2 ON r1.id = r2.id
 WHERE IFNULL(r2.cnt, 0)/r1.cnt <=%f
-ORDER BY rate DESC
+ORDER BY rate 
 '''
 
 
