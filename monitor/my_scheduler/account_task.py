@@ -11,6 +11,7 @@ import monitor.my_util.time_util as time_util
 from monitor.pojo.my_exception import *
 from decimal import Decimal as D
 from monitor.my_util.serializers import *
+from monitor.my_util.time_util import *
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ def today_register():
     count = []
     item = ItemEnum.today_register
     msg = ''
+    date_msg = ''
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -52,9 +54,11 @@ def today_register():
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] == 0:
             lv = 1
+            date_msg = get_time_period(1)
             raise (TaskException(item, lv, item.value.get('msg1')))
         if count[1] and count[2] and count[1] < count[2] * D(0.3):
             lv = 2
+            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg2') % (count[1], count[2])))
         task_success = True
     except TaskException as te:
@@ -67,7 +71,7 @@ def today_register():
     finally:
         if db:
             db.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
 
 
@@ -79,6 +83,7 @@ def today_loan_amount():
     count = []
     item = ItemEnum.today_loan_amount
     msg = ''
+    date_msg = ''
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -103,9 +108,11 @@ def today_loan_amount():
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] == 0:
             lv = 1
+            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg1')))
         if count[1] and count[0] < count[1] * 0.5:
             lv = 2
+            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg2') % (count[0], count[1])))
         task_success = True
     except TaskException as te:
@@ -117,7 +124,7 @@ def today_loan_amount():
     finally:
         if db:
             db.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
 
 
@@ -129,6 +136,7 @@ def today_repay():
     count = []
     item = ItemEnum.today_repay
     msg = ''
+    date_msg = ''
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -167,15 +175,18 @@ def today_repay():
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] == 0:
             lv = 1
+            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg1')))
         today = count[0] / count[1]
         if today < count[2] * D(0.3):
             lv = 2
+            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg2') % (today * 100, count[2] * 100)))
         # 如果当前时间与23点时间差值在600s（10分钟）范围内
         is23clock = abs(time_util.gettime(23) - time.time()) < 600
         if is23clock and today < 0.6:
             lv = 2
+            date_msg = get_time_str(23)
             raise (TaskException(item, lv, item.value.get('msg3') % (today * 100)))
         task_success = True
     except TaskException as te:
@@ -188,7 +199,7 @@ def today_repay():
     finally:
         if db:
             db.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
 
 
@@ -202,6 +213,7 @@ def repayment_sms():
     count_turku = []
     item = ItemEnum.repayment_sms
     msg = ''
+    date_msg = get_date(0)
     try:
         db_lasvegas = my_db.get_lasvegas_db()
         db_turku = my_db.get_turku_db()
@@ -276,7 +288,7 @@ def repayment_sms():
             db_lasvegas.close()
         if db_turku:
             db_turku.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count_turku
 
 
@@ -288,6 +300,7 @@ def collection_assign():
     count = []
     item = ItemEnum.collection_assign
     msg = ''
+    date_msg = get_date(0)
     try:
         db_turku = my_db.get_turku_db()
         if not db_turku:
@@ -329,7 +342,7 @@ def collection_assign():
     finally:
         if db_turku:
             db_turku.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
 
 
@@ -341,6 +354,7 @@ def account_balance():
     count = []
     item = ItemEnum.account_balance
     msg = ''
+    date_msg = get_date_time_now()
     try:
         db_turku = my_db.get_turku_db()
         if not db_turku:
@@ -377,5 +391,5 @@ def account_balance():
     finally:
         if db_turku:
             db_turku.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count

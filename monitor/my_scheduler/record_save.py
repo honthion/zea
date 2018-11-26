@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 # 保存记录到数据库
-def save_record(item_enum, lv, task_success, err_info):
+def save_record(item_enum, lv, task_success, date_time_str, err_info):
     # 根据类型Id 查询出最后一次任务的数据
     mon_id = item_enum.value.get("id")
     mon_title = item_enum.value.get("mon_title")
@@ -38,14 +38,14 @@ def save_record(item_enum, lv, task_success, err_info):
 
         if record != None and record.mon_status == MonitorStatusEnum.alarm:
             # 如果此条是失败的，将执行消息推送
-            send_message(item_enum, lv, task_success, err_info)
+            send_message(item_enum, lv, task_success, date_time_str, err_info)
     except Exception as err:
         log.error("save_record error.item_enum:%s,task_success:%r,remark:%s,errmsg:%s" % (
             mon_title, task_success, err_info, err.message))
 
 
 # 发送消息
-def send_message(item_enum, lv, task_success, msg):
+def send_message(item_enum, lv, task_success, date_time_str, msg):
     if task_success:
         return
     # 只有失败才进行推行
@@ -68,7 +68,7 @@ def send_message(item_enum, lv, task_success, msg):
     # 发送微信
     if wx_tag_id:
         wechat.send_message(split_to_set(wx_tag_id), lv,
-                            "MJB-监控预警\n分类：%s\n名称：%s\n描述：%s" % (mon_type_name, mon_title, msg))
+                            "MJB-监控预警\n分类：%s\n名称：%s\n时间：%s\n描述：%s" % (mon_type_name, mon_title, date_time_str, msg))
 
 
 def split_comma_to_set(str):

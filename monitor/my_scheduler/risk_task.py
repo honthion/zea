@@ -12,6 +12,7 @@ from monitor.pojo.my_exception import *
 from monitor.my_util.serializers import *
 from decimal import *
 from monitor.models import *
+from monitor.my_util.time_util import *
 
 log = logging.getLogger(__name__)
 
@@ -96,6 +97,7 @@ def risk_pass_rate():
     count = []
     item = ItemEnum.risk_pass_rate
     msg = ''
+    date_msg = get_time_period(0)
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -126,7 +128,7 @@ def risk_pass_rate():
     finally:
         if db:
             db.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
 
 
@@ -138,6 +140,7 @@ def fail_reason():
     count = []
     item = ItemEnum.fail_reason
     msg = ''
+    date_msg = get_time_period(0)
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -164,7 +167,7 @@ def fail_reason():
     finally:
         if db:
             db.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
 
 
@@ -176,6 +179,7 @@ def pass_loan_rate():
     count = []
     item = ItemEnum.pass_loan_rate
     msg = ''
+    date_msg = get_time_period(0)
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -210,7 +214,7 @@ def pass_loan_rate():
         if db:
             db.close()
 
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count_new
 
 
@@ -222,6 +226,7 @@ def overdue_rate_m1():
     count = []
     item = ItemEnum.overdue_rate_m1
     msg = ''
+    date_msg = get_delta_date(1)
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -247,5 +252,5 @@ def overdue_rate_m1():
     finally:
         if db:
             db.close()
-        record_save.save_record(item, lv, task_success, msg)
+        record_save.save_record(item, lv, task_success, date_msg, msg)
         return count
