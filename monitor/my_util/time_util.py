@@ -11,8 +11,7 @@ def gettime(val):
 
 # 获取整点时间的时间戳
 def get_time_str(val):
-    date = datetime.datetime.now().strftime("%Y-%m-%d") + " %2d:00:00" % val
-    return date.strptime("%Y-%m-%d %H:%M:%S")
+    return datetime.datetime.now().strftime("%Y-%m-%d") + " %2d:00:00" % val
 
 
 # 获取当前时间
@@ -24,7 +23,7 @@ def get_date_time_now():
 def get_time_now(now):
     if not now:
         now = datetime.datetime.now()
-    return now.strftime("%H:%M")
+    return now.strftime("%H:%M:%S")
 
 
 # 获取日期
@@ -37,8 +36,10 @@ def get_delta_date(val):
 # 获取时间段（前几个小时 ~ 现在）
 def get_time_period(val):
     if val == 0:
-        return get_delta_date(0) + "00:00~" + get_time_now(datetime.datetime.now())
+        return "%s 00:00:00~%s" % (get_delta_date(0), get_time_now(datetime.datetime.now()))
     else:
         now = datetime.datetime.now()
         date = now + datetime.timedelta(hours=val)
-        return get_delta_date(0) + get_time_now(date) + "~" + get_time_now(now)
+        return "%s %s~%s" % (get_delta_date(0), get_time_now(date), get_time_now(now))
+
+

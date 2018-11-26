@@ -49,12 +49,14 @@ def today_register():
             "WHERE `registerTime` BETWEEN DATE(DATE_SUB(NOW(),INTERVAL 1 DAY))  AND  DATE_SUB(NOW(), INTERVAL 1 DAY);")
         # [每小时注册量，今日注册量，昨日同期注册量]
         count = [row[0] for row in cursor.fetchall()]
+        # count[0] = 0.0
+        # count[1] = 1
         # 如果每小时注册量=0, level=1; 注册量<昨天同比30%，level=2
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] == 0:
             lv = 1
-            date_msg = get_time_period(1)
+            date_msg = get_time_period(-1)
             raise (TaskException(item, lv, item.value.get('msg1')))
         if count[1] and count[2] and count[1] < count[2] * D(0.3):
             lv = 2
@@ -103,6 +105,8 @@ def today_loan_amount():
             "WHERE `orderTime` BETWEEN DATE(DATE_SUB(NOW(),INTERVAL 1 DAY))  AND  DATE_SUB(NOW(), INTERVAL 1 DAY);")
         # [今日放款量，昨日同期放款量]
         count = [row[0] for row in cursor.fetchall()]
+        # count[0] = 0
+        # count[0] = 1
         # 如果放款量=0, level=1; 放款量<昨天同比50%，level=2
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
@@ -136,7 +140,7 @@ def today_repay():
     count = []
     item = ItemEnum.today_repay
     msg = ''
-    date_msg = ''
+    date_msg = get_time_period(0)
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -170,23 +174,24 @@ def today_repay():
         ''')
         # [今日还款数，今日应还款数，昨日还款率]
         count = [row[0] for row in cursor.fetchall()]
+        # count[0] = 0
+        # count[0] = 1
         # 如果回款量=0, level=1; 回款率 < 昨天同比30%，level=2；当天23:00时的回款率<60%, level=2;
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         if count[0] == 0:
             lv = 1
-            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg1')))
         today = count[0] / count[1]
         if today < count[2] * D(0.3):
             lv = 2
-            date_msg = get_time_period(0)
             raise (TaskException(item, lv, item.value.get('msg2') % (today * 100, count[2] * 100)))
         # 如果当前时间与23点时间差值在600s（10分钟）范围内
         is23clock = abs(time_util.gettime(23) - time.time()) < 600
+        # today = 0.5
+        # is23clock = True
         if is23clock and today < 0.6:
             lv = 2
-            date_msg = get_time_str(23)
             raise (TaskException(item, lv, item.value.get('msg3') % (today * 100)))
         task_success = True
     except TaskException as te:
@@ -213,7 +218,7 @@ def repayment_sms():
     count_turku = []
     item = ItemEnum.repayment_sms
     msg = ''
-    date_msg = get_date(0)
+    date_msg = get_delta_date(0)
     try:
         db_lasvegas = my_db.get_lasvegas_db()
         db_turku = my_db.get_turku_db()
@@ -245,7 +250,7 @@ def repayment_sms():
         
         SELECT COUNT(0) 
         FROM `record_phone_no_operation` 
-        WHERE DATE(ctime) = CURDATE()  AND  `operation_type`=1 AND `operation_status`=1 AND `remark` NOT BETWEEN 5 AND 6 
+        WHERE DATE(ctime) = CURDATE()  AND  `operation_type`=1 AND `operation_status`=1 AND `remark`  BETWEEN 5 AND 6 
         
         UNION ALL
         
@@ -262,6 +267,7 @@ def repayment_sms():
         is_am = time_util.gettime(12) - time.time() > 0
         sms_success = count_sms[4] > 0.8
         aida_success = count_turku[0] != 0 and float(count_turku[1]) / count_turku[0] > 0.2
+        # aida_success = False
         # 上午 判断 T，T-1 发送 成功功率小于80%
         if is_am and not sms_success and count_sms[0]:
             lv = 2
@@ -300,7 +306,7 @@ def collection_assign():
     count = []
     item = ItemEnum.collection_assign
     msg = ''
-    date_msg = get_date(0)
+    date_msg = get_delta_date(0)
     try:
         db_turku = my_db.get_turku_db()
         if not db_turku:
@@ -329,6 +335,7 @@ def collection_assign():
         count = cursor_turku.fetchone()
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
+        # if not count[0] != 0:
         if count[0] != 0:
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg1')))
@@ -378,6 +385,7 @@ def account_balance():
         log.info("response_str:%s" % (response_str))
         response_map = json.loads(response_str)
         valid_amount = float(response_map.get('validAmount', '-1'))
+        # valid_amount = 0.1
         if valid_amount and valid_amount < count[0] * 1.5:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1') % (valid_amount, count[0])))

@@ -134,7 +134,7 @@ def overdue_rate_m1():
 
 
 # 每日清空Item表中的free_data
-@register_job(scheduler, CronTrigger.from_crontab("0 0 * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab("5 0 * * *"), replace_existing=True)
 def clean_free_data():
     Item.objects.filter(id=10).update(free_data='')
 

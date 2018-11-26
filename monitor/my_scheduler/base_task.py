@@ -30,6 +30,7 @@ def account_login():
         assert content != ''
         response_body = json.loads(content)
         assert response_body.get('errcode') == 0
+        # assert 1 == 0
     except Exception:
         log.error("account_login response.status_code :%d,content:%s" % (status_code, content))
         lv = 1

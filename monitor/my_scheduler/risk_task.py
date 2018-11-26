@@ -44,21 +44,24 @@ FROM
 SELECT COUNT(0) rsc,
        `platformId`
    FROM `user`
-   WHERE `passTime`>=CURDATE()
+   WHERE DATE(`registerTime`)= "%s"
+   AND (hasIdentified=1 OR loanCount>0)
    GROUP BY `platformId`
-   HAVING rsc >=%d)u1
+   HAVING rsc >=%d )u1
 LEFT JOIN
   (-- 借款人数
 SELECT COUNT(0) oc,
-       `platformId`
-   FROM `user`
-   WHERE `passTime`>=CURDATE()
-     AND `loanCount`>0
+       u.`platformId`
+   FROM `user` u
+   LEFT JOIN credit_order co ON co.userId =u.id
+   WHERE DATE(u.`registerTime`)= "%s"
+     AND co.`loanState` = 3
    GROUP BY `platformId`) u2 ON u1.`platformId`=u2.`platformId`
 LEFT JOIN `daoliu_platform` dp ON dp.id = u1.`platformId`
 WHERE IFNULL(u2.oc, 0)/IFNULL(u1.rsc, 0)>=%f
 ORDER BY rate DESC
 '''
+
 # 首逾-自然还款率
 overdue_rate_m1_sql = '''
 SELECT r1.id,
@@ -111,6 +114,7 @@ def risk_pass_rate():
         # 当日的注册数>50的情况下，注册放款率或者审核通过率=0，level=1；注册放款率<5%*或者审核通过率<10%, level=2
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
+        # if  count[0] > 50 and count[1] * count[2] != 0:
         if count[0] > 50 and count[1] * count[2] == 0:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1') % (count[1] * 100, count[2] * 100)))
@@ -153,6 +157,7 @@ def fail_reason():
         count = cursor.fetchall()
         # 该failreaon占比>50%，level=2
         if count:
+            # if not count:
             lv = 2
             data = [item.value.get('msg1') % (c[0], c[1] * 100) for c in count]
             raise (TaskException(item, lv, "failReason异常\n" + "".join(data)))
@@ -187,7 +192,13 @@ def pass_loan_rate():
             log.error("get db error.")
             return
         cursor = db.cursor()
-        cursor.execute(pass_loan_rate_sql % (10, 0.9))
+        # 判断是否是凌晨
+        zero_clock = abs(time_util.gettime(0) - time.time()) < 60
+        # zero_clock = True
+        date_str = get_delta_date(-1) if zero_clock else get_delta_date(0)
+        sql = pass_loan_rate_sql % (date_str, 10, date_str, 0.9)
+        date_msg = get_delta_date(-1) if zero_clock else get_time_period(0)
+        cursor.execute(sql)
         # [id，平台名称，通过人数，首借人数，通过借款率]
         count = cursor.fetchall()
         count_new = []
@@ -198,6 +209,7 @@ def pass_loan_rate():
                 if c[1] not in free_plf_names:
                     count_new.append(c)
 
+        # if not count_new:
         if count_new:
             lv = 2
             data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count_new]
@@ -226,7 +238,7 @@ def overdue_rate_m1():
     count = []
     item = ItemEnum.overdue_rate_m1
     msg = ''
-    date_msg = get_delta_date(1)
+    date_msg = get_delta_date(-1)
     try:
         db = my_db.get_turku_db()
         if not db:
@@ -238,6 +250,7 @@ def overdue_rate_m1():
         # [id，平台名称，应还笔数，自然还款笔数，自然还款率]
         count = cursor.fetchall()
         if count:
+            # if not count:
             lv = 2
             data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count]
             raise (TaskException(item, lv, "自然还款率\n" + "".join(data)))
