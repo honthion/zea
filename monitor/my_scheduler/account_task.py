@@ -256,23 +256,23 @@ def repayment_sms():
         
         SELECT COUNT(0) 
         FROM credit_order 
-        WHERE loanState=3 AND repaymentState=0 
-        AND (DATE(latestPaymentDate - 1)=CURDATE() OR DATE(latestPaymentDate)=CURDATE() )
-        ''')
+        WHERE ((loanState=3 AND repaymentState=0  ) OR ( repaymentState=1  AND `paymentDate` > "%s"))
+        AND (DATE(latestPaymentDate - 1)=CURDATE() OR DATE(latestPaymentDate)=CURDATE() ) 
+        ''' % (get_time_str(9)))
         count_turku = [row[0] for row in cursor_turku.fetchall()]
         # [语音发送条数,语音发送成功数，总短信发送条数]
         if not (count_sms and count_turku):
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         #  发送的成功率
         is_am = time_util.gettime(12) - time.time() > 0
-        sms_success = count_sms[4] > 0.8
+        sms_success = count_turku[2] != 0 and float(count_sms[1]) / count_turku[2] > 0.8
         aida_success = count_turku[0] != 0 and float(count_turku[1]) / count_turku[0] > 0.2
         # aida_success = False
         # 上午 判断 T，T-1 发送 成功功率小于80%
         if is_am and not sms_success and count_sms[0]:
             lv = 2
             msg = item.value.get('msg1') % (
-                (count_sms[0], count_sms[1], count_sms[4] * 100))
+                (count_turku[2], count_sms[1], float(count_sms[1]) / count_turku[2] * 100))
         # 下午 判断艾达语音 发送 成功功率小于20%
         if not is_am and not aida_success and count_turku[0]:
             lv = 2
