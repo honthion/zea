@@ -250,7 +250,7 @@ def repayment_sms():
         
         SELECT COUNT(0) 
         FROM `record_phone_no_operation` 
-        WHERE DATE(ctime) = CURDATE()  AND  `operation_type`=1 AND `operation_status`=1 AND `remark`  BETWEEN 5 AND 6 
+        WHERE DATE(ctime) = CURDATE()  AND  `operation_type`=1 AND `operation_status`=1 AND `remark`  IN (-1,2,4)
         
         UNION ALL
         
@@ -260,6 +260,7 @@ def repayment_sms():
         AND (DATE(latestPaymentDate - 1)=CURDATE() OR DATE(latestPaymentDate)=CURDATE() ) 
         ''' % (get_time_str(9)))
         count_turku = [row[0] for row in cursor_turku.fetchall()]
+        # count_turku[0] = 0
         # [语音发送条数,语音发送成功数，总短信发送条数]
         if not (count_sms and count_turku):
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
@@ -280,6 +281,9 @@ def repayment_sms():
                 (count_turku[0], count_turku[1], float(count_turku[1]) / count_turku[0] * 100))
         if lv != 0:
             raise (TaskException(item, lv, msg))
+        # 如果获取的基数==0 ，报告管理员
+        if count_turku[0] * count_turku[2] == 0:
+            raise RuntimeError
         task_success = True
     except TaskException as te:
         msg = te.msg
