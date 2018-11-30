@@ -282,7 +282,9 @@ def repayment_sms():
         if lv != 0:
             raise (TaskException(item, lv, msg))
         # 如果获取的基数==0 ，报告管理员
-        if count_turku[0] * count_turku[2] == 0:
+        if is_am and count_turku[2] == 0:
+            raise RuntimeError
+        if not is_am and count_turku[0] == 0:
             raise RuntimeError
         task_success = True
     except TaskException as te:
