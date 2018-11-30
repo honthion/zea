@@ -162,15 +162,15 @@ def today_repay():
                     UNION         
         
                     SELECT 
-                    ( SELECT COUNT(0) 
+                        ( SELECT COUNT(0) 
                         FROM `credit_order` 
                         WHERE `paymentDate` <=  DATE_SUB(NOW(), INTERVAL 1 DAY)
                         AND `repaymentState` = 1 
-                        AND  DATE(`latestPaymentDate`) = CURDATE() -1)
+                        AND  DATEDIFF(`latestPaymentDate`,CURDATE()) = -1)
                         /
-                       ( SELECT COUNT(0)
+                        ( SELECT COUNT(0)
                         FROM `credit_order` 
-                        WHERE DATE(`latestPaymentDate`) = CURDATE() -1)
+                        WHERE DATEDIFF(`latestPaymentDate`,CURDATE()) = -1)
         ''')
         # [今日还款数，今日应还款数，昨日还款率]
         count = [row[0] for row in cursor.fetchall()]
@@ -257,7 +257,8 @@ def repayment_sms():
         SELECT COUNT(0) 
         FROM credit_order 
         WHERE ((loanState=3 AND repaymentState=0  ) OR ( repaymentState=1  AND `paymentDate` > "%s"))
-        AND (DATE(latestPaymentDate - 1)=CURDATE() OR DATE(latestPaymentDate)=CURDATE() ) 
+        AND ( DATEDIFF(latestPaymentDate, CURDATE()) =1 OR DATE(latestPaymentDate)=CURDATE() ) 
+        
         ''' % (get_time_str(9)))
         count_turku = [row[0] for row in cursor_turku.fetchall()]
         # count_turku[0] = 0

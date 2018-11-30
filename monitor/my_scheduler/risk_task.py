@@ -63,8 +63,7 @@ ORDER BY rate DESC
 '''
 
 # 首逾-自然还款率
-overdue_rate_m1_sql = '''
-SELECT r1.id,
+overdue_rate_m1_sql = '''SELECT r1.id,
        r1.name,
        r1.cnt,
        IFNULL(r2.cnt, 0) cnt2,
@@ -76,7 +75,7 @@ FROM
    FROM `credit_order` co
    LEFT JOIN `user` u ON u.id = co.`userId`
    LEFT JOIN `daoliu_platform` dp ON dp.id = u.`platformId`
-   WHERE co.`latestPaymentDate` = CURDATE()-1
+    WHERE DATEDIFF(co.`latestPaymentDate`,CURDATE()) = -1
    GROUP BY u.`platformId`
    HAVING cnt>=%d) r1
 LEFT JOIN
@@ -84,8 +83,8 @@ LEFT JOIN
           COUNT(0) cnt
    FROM `credit_order` co
    LEFT JOIN `user` u ON u.id = co.`userId`
-   WHERE co.`latestPaymentDate` = CURDATE()-1
-     AND DATE(`paymentDate`) <= CURDATE()-1
+   WHERE DATEDIFF(co.`latestPaymentDate`,CURDATE()) = -1
+   AND  DATEDIFF(co.`paymentDate`,CURDATE()) <= -1
    GROUP BY u.`platformId`) r2 ON r1.id = r2.id
 WHERE IFNULL(r2.cnt, 0)/r1.cnt <=%f
 ORDER BY rate 
