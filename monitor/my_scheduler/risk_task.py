@@ -159,7 +159,7 @@ def fail_reason():
             # if not count:
             lv = 2
             data = [item.value.get('msg1') % (c[0], c[1] * 100) for c in count]
-            raise (TaskException(item, lv, "failReason异常\n" + "".join(data)))
+            raise (TaskException(item, lv, "\n" + "".join(data)))
         task_success = True
     except TaskException as te:
         msg = te.msg
