@@ -111,13 +111,15 @@ def risk_pass_rate():
         # [注册量，注册放款率，申请成功率]
         count = cursor.fetchone()
         # 当日的注册数>50的情况下，注册放款率或者审核通过率=0，level=1；注册放款率<5%*或者审核通过率<10%, level=2
+        # 2018年12月3日 当日的注册数>50的情况下，注册放款率或者审核通过率=0，level=1；9:00~12:00：注册放款率<3.5%或者审核通过率<10%, level=2；12:00以后注册放款率<5%或者审核通过率<10%, level=2
         if not count:
             raise (TaskException(item, lv, my_db.msg_data_not_exist))
         # if  count[0] > 50 and count[1] * count[2] != 0:
         if count[0] > 50 and count[1] * count[2] == 0:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1') % (count[1] * 100, count[2] * 100)))
-        if count[1] < 0.05 or count[2] < 0.1:
+        pass_rate = 0.035 if time_util.gettime(12) + 10 >= time.time() else 0.05
+        if count[1] < pass_rate or count[2] < 0.1:
             lv = 2
             raise (TaskException(item, lv, item.value.get('msg1') % (count[1] * 100, count[2] * 100)))
         task_success = True
