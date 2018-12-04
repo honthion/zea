@@ -136,8 +136,7 @@
       "mon_trigger": "0 0 9-23/1 * * ? *",
       "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
       "mon_desc": "当日的某个渠道的通过数>=10的情况下，借款率>=90%，level=2",
-      "mon_status": 1,
-      "free_data": ",明特量化,菠萝贷-2,"
+      "mon_status": 1
     }
   },
   {
