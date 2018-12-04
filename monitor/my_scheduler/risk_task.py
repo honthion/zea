@@ -213,7 +213,7 @@ def pass_loan_rate():
         # if not count_new:
         if count_new:
             lv = 2
-            data = [item.value.get('msg1') % (c[1], c[4] * 100) for c in count_new]
+            data = [item.value.get('msg1') % (c[1], c[2], c[4] * 100) for c in count_new]
             raise (TaskException(item, lv, "通过借款率\n" + "".join(data)))
         task_success = True
     except TaskException as te:
