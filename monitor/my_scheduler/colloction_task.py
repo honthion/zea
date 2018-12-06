@@ -179,7 +179,7 @@ def collection_rate():
     count = []
     item = ItemEnum.collection_rate
     msg = ''
-    date_msg = get_delta_date(0)
+    date_msg = get_date_time_now()
     try:
         db_turku = my_db.get_turku_db()
         if not db_turku:
