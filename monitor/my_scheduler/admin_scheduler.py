@@ -7,7 +7,7 @@ from apscheduler.triggers.cron import CronTrigger
 from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 import logging
-import base_task, account_task, risk_task
+import base_task, account_task, risk_task, colloction_task
 from monitor.models import *
 from monitor.pojo.my_enum import *
 import monitor.my_util.my_db as my_db
@@ -81,7 +81,7 @@ def repayment_sms():
               replace_existing=True)
 def collection_assign():
     if check_task_status(ItemEnum.collection_assign):
-        account_task.collection_assign()
+        colloction_task.collection_assign()
 
 
 # 账户余额
@@ -133,10 +133,19 @@ def overdue_rate_m1():
         risk_task.overdue_rate_m1()
 
 
+# 催收案件分配
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.collection_rate.value.get('mon_trigger')),
+              replace_existing=True)
+def collection_rate():
+    if check_task_status(ItemEnum.collection_rate):
+        colloction_task.collection_rate()
+
+
 # 每日清空Item表中的free_data
 @register_job(scheduler, CronTrigger.from_crontab("5 0 * * *"), replace_existing=True)
 def clean_free_data():
-    Item.objects.filter(id=10).update(free_data='')
+    Item.objects.filter(id=10).update(free_data='', free_date='')
 
 
 # 判断是否启动这个定时任务

@@ -304,62 +304,6 @@ def repayment_sms():
         record_save.save_record(item, lv, task_success, date_msg, msg)
         return count_turku
 
-
-# 催收案件分配
-def collection_assign():
-    task_success = False
-    lv = 0
-    db_turku = None
-    count = []
-    item = ItemEnum.collection_assign
-    msg = ''
-    date_msg = get_delta_date(0)
-    try:
-        db_turku = my_db.get_turku_db()
-        if not db_turku:
-            db_task.db_error()
-            log.error("get db error.")
-            return
-        # 催收案件分配
-        cursor_turku = db_turku.cursor()
-        cursor_turku.execute(
-            '''
-            SELECT COUNT(0)
-            FROM
-              (SELECT DISTINCT `name`
-               FROM manager
-               WHERE `type` IN (5,
-                                10,
-                                12)
-                 AND enabled = 1
-                 AND `name` NOT IN
-                   (SELECT DISTINCT `managerName`
-                    FROM `urge_order`
-                    WHERE DATE(outAddTime) = CURDATE())) s     
-            '''
-        )
-        # [催收案件条数]
-        count = cursor_turku.fetchone()
-        if not count:
-            raise (TaskException(item, lv, my_db.msg_data_not_exist))
-        # if not count[0] != 0:
-        if count[0] != 0:
-            lv = 2
-            raise (TaskException(item, lv, item.value.get('msg1')))
-        task_success = True
-    except TaskException as te:
-        msg = te.msg
-        log.error("collection_assign alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
-    except Exception as e:
-        msg = "collection_assign fail."
-        log.error("collection_assign fail.data:%s,msg:%s" % (json.dumps(count), e.message))
-    finally:
-        if db_turku:
-            db_turku.close()
-        record_save.save_record(item, lv, task_success, date_msg, msg)
-        return count
-
-
 # 账户余额
 def account_balance():
     task_success = False

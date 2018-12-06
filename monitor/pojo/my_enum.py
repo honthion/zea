@@ -8,6 +8,7 @@ class MonitorTypeEnum(BaseEnum):
     account = EnumType(2, u'账务系统')
     risk = EnumType(3, u'风控系统')
     third = EnumType(4, u'三方接口')
+    collection = EnumType(5, u'催收系统')
 
 
 class MonitorStatusEnum(BaseEnum):
@@ -59,7 +60,7 @@ class ItemEnum(Enum):
                      "msg2": "【语音】应提醒%d，成功%d,成功率%.2f%%",
                      "mon_desc": "短信（T、T-1）成功率0.8；语音首次成功率0.2，level=2;"}
     collection_assign = {"id": 6,
-                         "mon_type": 2,
+                         "mon_type": 5,
                          "mon_title": "催收案件分配",
                          "mon_trigger": "30 9 * *  *",
                          "mon_trigger_desc": "每天9:30检查一次",
@@ -100,3 +101,15 @@ class ItemEnum(Enum):
                        "mon_trigger_desc": "每天00:01查询一次",
                        "msg1": "【%s】%.2f%%\n",
                        "mon_desc": "昨日应还的某个渠道的借款数>=8，并且自然还款率<=50%，level=2;"}
+    collection_rate = {"id": 13,
+                       "mon_type": 5,
+                       "mon_title": "催收账号的催回率监控",
+                       "mon_trigger": "30 9 * *  *",
+                       "mon_trigger_desc": "每天9:30检查一次",
+                       "msg1": "【%s】\n%s\n委案量：%d\n%s\n",
+                       "mon_desc": "针对当前所有有效催收账号："
+                                   "对于S1账号，最近3天（不含今天），委案量>30情况下，催回率低于58%，则level2；"
+                                   "对于S2账号，最近3天（不含今天），委案量>30情况下，催回单量< 3，则level2；"
+                                   "对于S2P账号，最近5天（不含今天），委案量>30情况下，催回单量< 2，则level2；"
+                                   "对于S3账号，最近10天（不含今天），委案量>30情况下，催回单量< 2，则level2；"
+                                   "对于M2账号，最近15天（不含今天），委案量>30情况下，催回单量< 1，则level2；"}
