@@ -62,8 +62,8 @@ class ItemEnum(Enum):
     collection_assign = {"id": 6,
                          "mon_type": 5,
                          "mon_title": "催收案件分配",
-                         "mon_trigger": "30 9 * *  *",
-                         "mon_trigger_desc": "每天9:30检查一次",
+                         "mon_trigger": "30 7 * *  *",
+                         "mon_trigger_desc": "每天7:30检查一次",
                          "msg1": "没有催收案件分配",
                          "mon_desc": "催收案件每个managerId都有分配，level=2;"}
     account_balance = {"id": 7,
@@ -104,8 +104,8 @@ class ItemEnum(Enum):
     collection_rate = {"id": 13,
                        "mon_type": 5,
                        "mon_title": "催收账号的催回率监控",
-                       "mon_trigger": "30 9 * *  *",
-                       "mon_trigger_desc": "每天9:30检查一次",
+                       "mon_trigger": "30 7 * *  *",
+                       "mon_trigger_desc": "每天7:30检查一次",
                        "msg1": "【%s】\n%s\n委案量：%d\n%s\n",
                        "mon_desc": "针对当前所有有效催收账号："
                                    "对于S1账号，最近3天（不含今天），委案量>30情况下，催回率低于58%，则level2；"

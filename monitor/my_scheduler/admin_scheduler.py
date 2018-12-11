@@ -133,7 +133,7 @@ def overdue_rate_m1():
         risk_task.overdue_rate_m1()
 
 
-# 催收案件分配
+# 催收率
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.collection_rate.value.get('mon_trigger')),
               replace_existing=True)
