@@ -141,12 +141,14 @@ def collection_assign():
                FROM manager
                WHERE `type` IN (5,
                                 10,
-                                12)
+                                12,
+                                17,
+                                19)
                  AND enabled = 1
                  AND `name` NOT IN
                    (SELECT DISTINCT `managerName`
                     FROM `urge_order`
-                    WHERE DATE(outAddTime) = CURDATE())) s     
+                    WHERE DATE(allotTime) = CURDATE())) s     
             '''
         )
         # [催收案件条数]
