@@ -62,8 +62,8 @@ class ItemEnum(Enum):
     collection_assign = {"id": 6,
                          "mon_type": 5,
                          "mon_title": "催收案件分配",
-                         "mon_trigger": "30 7 * *  *",
-                         "mon_trigger_desc": "每天7:30检查一次",
+                         "mon_trigger": "0 7 * *  *",
+                         "mon_trigger_desc": "每天7:00检查一次",
                          "msg1": "没有催收案件分配",
                          "mon_desc": "催收案件每个managerId都有分配，level=2;"}
     account_balance = {"id": 7,
@@ -104,8 +104,8 @@ class ItemEnum(Enum):
     collection_rate = {"id": 13,
                        "mon_type": 5,
                        "mon_title": "催收账号的催回率监控",
-                       "mon_trigger": "30 7 * *  *",
-                       "mon_trigger_desc": "每天7:30检查一次",
+                       "mon_trigger": "0 7 * *  *",
+                       "mon_trigger_desc": "每天7:00检查一次",
                        "msg1": "【%s】\n%s\n委案量：%d\n%s\n",
                        "mon_desc": "针对当前所有有效催收账号："
                                    "对于S1账号，最近3天（不含今天），委案量>30情况下，催回率低于58%，则level2；"
@@ -113,3 +113,11 @@ class ItemEnum(Enum):
                                    "对于S2P账号，最近5天（不含今天），委案量>30情况下，催回单量< 2，则level2；"
                                    "对于S3账号，最近10天（不含今天），委案量>30情况下，催回单量< 2，则level2；"
                                    "对于M2账号，最近15天（不含今天），委案量>30情况下，催回单量< 1，则level2；"}
+    repayment1 = {"id": 14,
+                  "mon_type": 2,
+                  "mon_title": "首复借回款监控 ",
+                  "mon_trigger": "0 9 * *  *",
+                  "mon_trigger_desc": "每天9:00检查一次",
+                  "msg1": "\n【到期日】%s\n【总还款率】%.2f%%\n【首借还款率】%.2f%%\n【复借还款率】%.2f%%",
+                  "mon_desc": "三天前到期的还款率（比如10号早上9点查询7号到期的还款率），"
+                              "总还款率<85%或首借还款率<82%或复借还款率<87%，则预警level2 "}

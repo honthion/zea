@@ -150,6 +150,8 @@ def item_start(request, item_id='0'):
                 ast.overdue_rate_m1()
             elif item_id == 13:
                 ast.collection_rate()
+            elif item_id == 14:
+                ast.repayment1()
             return JsonResponse({"success": True, "msg": "", "data": ""})
         except Item.DoesNotExist:
             print ("DoesNotExist!")

@@ -66,6 +66,14 @@ def today_repay():
         account_task.today_repay()
 
 
+# 首复借回款监控
+# @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
+@register_job(scheduler, CronTrigger.from_crontab(ItemEnum.repayment1.value.get('mon_trigger')), replace_existing=True)
+def repayment1():
+    if check_task_status(ItemEnum.repayment1):
+        account_task.repayment1()
+
+
 # 还款短信和语音提醒
 # @register_job(scheduler, CronTrigger.from_crontab("0/1 * * * *"), replace_existing=True)
 @register_job(scheduler, CronTrigger.from_crontab(ItemEnum.repayment_sms.value.get('mon_trigger')),

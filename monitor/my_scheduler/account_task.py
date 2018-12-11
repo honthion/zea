@@ -15,6 +15,40 @@ from monitor.my_util.time_util import *
 
 log = logging.getLogger(__name__)
 
+sql_repayment1 = """
+-- 统计时间	打款日	到期日	借款笔数	首借笔数	复借笔数	还款笔数	首借已还	复借已还	自然还款笔数	首借自然还款	复借自然还款
+SELECT NOW() as 统计时间, SUBDATE(CURDATE(),INTERVAL 3+7 DAY) as 打款日, SUBDATE(CURDATE(),INTERVAL 3 DAY) as 到期日, 借款笔数,	首借笔数,	(借款笔数-首借笔数) as 复借笔数,	还款笔数,	首借已还,	(还款笔数-首借已还) as 复借已还,	
+自然还款笔数,	首借自然还款,	(自然还款笔数-首借自然还款) as 复借自然还款
+from (
+-- 借款笔数
+(SELECT count(1) as 借款笔数 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 ) t1,
+-- 首借笔数
+(SELECT count(1) as 首借笔数 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and userId not in 
+(select DISTINCT userId from credit_order where orderTime <SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and loanState = 3)) t2,
+-- 复借笔数
+-- SELECT count(1) as 复借笔数 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and userId in 
+-- (select DISTINCT userId from credit_order where orderTime <SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and loanState = 3);
+-- 还款笔数
+(SELECT count(1) as 还款笔数 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and repaymentState = 1) t3,
+-- 首借已还
+(SELECT count(1) as 首借已还 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and repaymentState = 1 and userId not in 
+(select DISTINCT userId from credit_order where orderTime <SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and loanState = 3)) t4,
+-- 复借已还
+-- SELECT count(1) as 复借已还 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and repaymentState = 1 and userId in 
+-- (select DISTINCT userId from credit_order where orderTime <SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and loanState = 3);
+-- 自然还款笔数	
+(SELECT count(1) as 自然还款笔数 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and repaymentState = 1 and paymentDate < DATE_ADD(latestPaymentDate,INTERVAL 1 day)) t5,
+
+-- 首借自然还款	
+(SELECT count(1) as 首借自然还款 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and repaymentState = 1 and paymentDate < DATE_ADD(latestPaymentDate,INTERVAL 1 day) and userId not in 
+(select DISTINCT userId from credit_order where orderTime <SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and loanState = 3)) t6
+-- 复借自然还款
+-- SELECT count(1) as 复借自然还款 FROM `credit_order` where orderTime >= SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and orderTime < SUBDATE(CURDATE(),INTERVAL 3+7-1 DAY) and loanState = 3 and repaymentState = 1 and paymentDate < DATE_ADD(latestPaymentDate,INTERVAL 1 day) and userId in 
+-- (select DISTINCT userId from credit_order where orderTime <SUBDATE(CURDATE(),INTERVAL 3+7 DAY) and loanState = 3);
+)
+
+"""
+
 
 # 当日注册用户
 def today_register():
@@ -208,6 +242,50 @@ def today_repay():
         return count
 
 
+# 首复借回款监控
+def repayment1():
+    task_success = False
+    lv = 0
+    db = None
+    count = []
+    item = ItemEnum.repayment1
+    msg = ''
+    date_msg = ''
+    try:
+        db = my_db.get_turku_db()
+        if not db:
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        cursor = db.cursor()
+
+        cursor.execute(sql_repayment1)
+        # [0统计时间	1打款日	2到期日	3借款笔数	4首借笔数	5复借笔数	6还款笔数	7首借已还	8复借已还	9自然还款笔数	10首借自然还款	11复借自然还款]
+        count = cursor.fetchone()
+        if not count:
+            raise (TaskException(item, lv, my_db.msg_data_not_exist))
+        total_rate = float(count[6]) / count[3]
+        loan_count_1_rate = float(count[7]) / count[4]
+        loan_count_p_rate = float(count[8]) / count[5]
+        if total_rate < 0.85 or loan_count_1_rate < 0.82 or loan_count_p_rate < 0.87:
+            lv = 2
+            date_msg = get_date_time_now()
+            raise (TaskException(item, lv, item.value.get('msg1') % (
+            count[2], total_rate * 100, loan_count_1_rate * 100, loan_count_p_rate * 100)))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error("repayment1 alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+    except Exception as e:
+        msg = "repayment1 fail."
+        log.error("repayment1 fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+    finally:
+        if db:
+            db.close()
+        record_save.save_record(item, lv, task_success, date_msg, msg)
+        return count
+
+
 # 还款短信和语音提醒
 def repayment_sms():
     task_success = False
@@ -303,6 +381,7 @@ def repayment_sms():
             db_turku.close()
         record_save.save_record(item, lv, task_success, date_msg, msg)
         return count_turku
+
 
 # 账户余额
 def account_balance():
