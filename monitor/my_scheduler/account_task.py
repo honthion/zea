@@ -271,7 +271,7 @@ def repayment1():
             lv = 2
             date_msg = get_date_time_now()
             raise (TaskException(item, lv, item.value.get('msg1') % (
-            count[2], total_rate * 100, loan_count_1_rate * 100, loan_count_p_rate * 100)))
+                count[2], total_rate * 100, loan_count_1_rate * 100, loan_count_p_rate * 100)))
         task_success = True
     except TaskException as te:
         msg = te.msg
@@ -419,6 +419,53 @@ def account_balance():
         if valid_amount and valid_amount < count[0] * 1.5:
             lv = 1
             raise (TaskException(item, lv, item.value.get('msg1') % (valid_amount, count[0])))
+        task_success = True
+    except TaskException as te:
+        msg = te.msg
+        log.error("account_balance alarm.data:%s,lv:%d,msg:%s" % (json.dumps(count), te.level, te.msg))
+    except Exception as e:
+        msg = "account_balance fail."
+        log.error("account_balance fail.data:%s,msg:%s" % (json.dumps(count), e.message))
+    finally:
+        if db_turku:
+            db_turku.close()
+        record_save.save_record(item, lv, task_success, date_msg, msg)
+        return count
+
+
+# 账户余额
+def zhitou_balance():
+    task_success = False
+    lv = 0
+    db_turku = None
+    count = []
+    item = ItemEnum.zhitou_balance
+    msg = ''
+    date_msg = get_date_time_now()
+    try:
+        db_turku = my_db.get_turku_db()
+        if not db_turku:
+            db_task.db_error()
+            log.error("get db error.")
+            return
+        cursor_turku = db_turku.cursor()
+        # 昨天同期下后2个小时放款量的1.5倍
+        cursor_turku.execute(
+            """
+            SELECT credit_order.investorId,investor.name, SUM(credit_order.`primeCost`) sumx,investor.balance balance
+            FROM `credit_order`
+            left join investor  on credit_order.investorId = investor.id
+            WHERE credit_order.investorId > 0 AND credit_order.`orderTime` BETWEEN DATE_SUB(NOW(),INTERVAL 24 HOUR)  AND  DATE_SUB(NOW(), INTERVAL 22 HOUR) 
+            group by credit_order.investorId 
+            having sumx * 1.5  > balance
+            """
+        )
+        # [id name,昨天同期下2个小时放款量,当前余额]
+        count = cursor_turku.fetchall()
+        if count:
+            lv = 1
+            data = [item.value.get('msg1') % (c[1], c[2], c[3]) for c in count]
+            raise (TaskException(item, lv, "\n" + "".join(data)))
         task_success = True
     except TaskException as te:
         msg = te.msg

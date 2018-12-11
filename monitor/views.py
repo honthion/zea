@@ -152,6 +152,8 @@ def item_start(request, item_id='0'):
                 ast.collection_rate()
             elif item_id == 14:
                 ast.repayment1()
+            elif item_id == 15:
+                ast.zhitou_balance()
             return JsonResponse({"success": True, "msg": "", "data": ""})
         except Item.DoesNotExist:
             print ("DoesNotExist!")
