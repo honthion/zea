@@ -93,7 +93,7 @@ class ItemEnum(Enum):
                       "mon_trigger": "0 0,9-23/1 * * *",
                       "mon_trigger_desc": "每天从9:00开始每1小时查询一次",
                       "msg1": "【%s】通过数：%d，借款率：%.2f%%\n",
-                      "mon_desc": "当日的某个渠道的通过数>=10的情况下，借款率>=90%，level=2"}
+                      "mon_desc": "当日的某个渠道的通过数>=18的情况下，借款率>=90%，level=2"}
     overdue_rate_m1 = {"id": 11,
                        "mon_type": 3,
                        "mon_title": "渠道首逾监控",

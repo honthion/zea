@@ -197,7 +197,7 @@ def pass_loan_rate():
         zero_clock = abs(time_util.gettime(0) - time.time()) < 60
         # zero_clock = True
         date_str = get_delta_date(-1) if zero_clock else get_delta_date(0)
-        sql = pass_loan_rate_sql % (date_str, 10, date_str, 0.9)
+        sql = pass_loan_rate_sql % (date_str, 18, date_str, 0.9)
         date_msg = get_delta_date(-1) if zero_clock else get_time_period(0)
         cursor.execute(sql)
         # [id，平台名称，通过人数，首借人数，通过借款率]
@@ -214,7 +214,7 @@ def pass_loan_rate():
         if count_new:
             lv = 2
             data = [item.value.get('msg1') % (c[1], c[2], c[4] * 100) for c in count_new]
-            raise (TaskException(item, lv, "通过借款率\n" + "".join(data)))
+            raise (TaskException(item, lv, "\n" + "".join(data)))
         task_success = True
     except TaskException as te:
         msg = te.msg
