@@ -455,7 +455,7 @@ def zhitou_balance():
             SELECT credit_order.investorId,investor.name, SUM(credit_order.`primeCost`) sumx,investor.balance balance
             FROM `credit_order`
             left join investor  on credit_order.investorId = investor.id
-            WHERE credit_order.investorId > 0 AND credit_order.`orderTime` BETWEEN DATE_SUB(NOW(),INTERVAL 24 HOUR)  AND  DATE_SUB(NOW(), INTERVAL 22 HOUR) 
+            WHERE investor.status=0 AND credit_order.investorId > 0 AND credit_order.`orderTime` BETWEEN DATE_SUB(NOW(),INTERVAL 24 HOUR)  AND  DATE_SUB(NOW(), INTERVAL 22 HOUR) 
             group by credit_order.investorId 
             having sumx * 1.5  > balance
             """
