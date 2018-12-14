@@ -93,25 +93,10 @@ where t1.state=13 AND t1.time BETWEEN SUBDATE(CURDATE(),INTERVAL 10 DAY) AND CUR
 and  x1.paymentDate IS NOT NULL AND x1.state = 13
 GROUP BY t1.managerId)s1 on s0.managerId= s1.managerId
 where IFNULL(s1.cnt2,0) < 2
--- M2
-UNION ALL
-select 'M2' `le`, s0.managerId,s0.cnt1,CONCAT('催回单量:',IFNULL(s1.cnt2,0)) cnt0,CONCAT(SUBDATE(CURDATE(),INTERVAL 15 DAY),' ~ ',SUBDATE(CURDATE(),INTERVAL 1 DAY)) dd
-FROM (
-select managerId,count(0) cnt1
-from turku.urge_order_log t1
-where state=2 AND time BETWEEN SUBDATE(CURDATE(),INTERVAL 15 DAY) AND CURDATE()
-group by managerId HAVING cnt1> 30)s0
-LEFT JOIN (
-select  t1.managerId,count(0) cnt2
-from turku.urge_order_log t1
-left JOIN turku.urge_order x1 
-on t1.orderId = x1.orderId
-where t1.state=2 AND t1.time BETWEEN SUBDATE(CURDATE(),INTERVAL 15 DAY) AND CURDATE()
-and  x1.paymentDate IS NOT NULL AND x1.state = 2
-GROUP BY t1.managerId)s1 on s0.managerId= s1.managerId
-where IFNULL(s1.cnt2,0)< 1)u1
+)u1
 LEFT JOIN turku.manager m on u1.managerId = m.id 
 WHERE u1.managerId >0  and m.enabled=1
+order by u1.le,u1.cnt0 
 
 '''
 
