@@ -1,2 +1,2 @@
 # zea
-django mjb监控项目
+django 前后台模板
